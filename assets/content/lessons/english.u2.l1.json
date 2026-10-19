@@ -1,0 +1,435 @@
+{
+ "lessonId": "english.u2.l1",
+ "note": "محتوى تجريبي مؤقت ينتظر مراجعة معلم.",
+ "words": [
+  {
+   "en": "Apple",
+   "ar": "تفاحة",
+   "ipa": "/ˈæp.əl/",
+   "illustration": "apple",
+   "sentenceEn": "I eat an apple.",
+   "sentenceAr": "أنا آكل تفاحة."
+  },
+  {
+   "en": "Banana",
+   "ar": "موزة",
+   "ipa": "/bəˈnɑː.nə/",
+   "illustration": "banana",
+   "sentenceEn": "I like a banana.",
+   "sentenceAr": "أنا أحب الموزة."
+  },
+  {
+   "en": "Orange",
+   "ar": "برتقالة",
+   "ipa": "/ˈɒr.ɪndʒ/",
+   "illustration": "orange",
+   "sentenceEn": "The orange is sweet.",
+   "sentenceAr": "البرتقالة حلوة."
+  },
+  {
+   "en": "Grapes",
+   "ar": "عنب",
+   "ipa": "/ɡreɪps/",
+   "illustration": "grapes",
+   "sentenceEn": "I see red grapes.",
+   "sentenceAr": "أرى عنبًا أحمر."
+  },
+  {
+   "en": "Lemon",
+   "ar": "ليمونة",
+   "ipa": "/ˈlem.ən/",
+   "illustration": "lemon",
+   "sentenceEn": "The lemon is yellow.",
+   "sentenceAr": "الليمونة صفراء."
+  },
+  {
+   "en": "Strawberry",
+   "ar": "فراولة",
+   "ipa": "/ˈstrɔː.bər.i/",
+   "illustration": "strawberry",
+   "sentenceEn": "The strawberry is red.",
+   "sentenceAr": "الفراولة حمراء."
+  }
+ ],
+ "practice": [
+  {
+   "id": "english.u2.l1.p1",
+   "type": "listenChoose",
+   "concept": "english.u2.l1.c1",
+   "prompt": "اضغط لتسمع الكلمة، ثم اختر صورتها",
+   "word": "Apple",
+   "choices": [
+    "apple",
+    "orange",
+    "banana",
+    "grapes"
+   ],
+   "answer": 0,
+   "hints": [
+    "اضغط «أعد» لتسمع الكلمة مرة ثانية.",
+    "الكلمة هي Apple."
+   ],
+   "solution": [
+    "Apple تعني تفاحة"
+   ],
+   "explanation": "Apple تعني تفاحة."
+  },
+  {
+   "id": "english.u2.l1.p2",
+   "type": "listenChoose",
+   "concept": "english.u2.l1.c1",
+   "prompt": "اضغط لتسمع الكلمة، ثم اختر صورتها",
+   "word": "Banana",
+   "choices": [
+    "banana",
+    "apple",
+    "lemon",
+    "strawberry"
+   ],
+   "answer": 0,
+   "hints": [
+    "اضغط «أعد» لتسمع الكلمة مرة ثانية.",
+    "الكلمة هي Banana."
+   ],
+   "solution": [
+    "Banana تعني موزة"
+   ],
+   "explanation": "Banana تعني موزة."
+  },
+  {
+   "id": "english.u2.l1.p3",
+   "type": "listenChoose",
+   "concept": "english.u2.l1.c1",
+   "prompt": "اضغط لتسمع الكلمة، ثم اختر صورتها",
+   "word": "Orange",
+   "choices": [
+    "orange",
+    "grapes",
+    "apple",
+    "banana"
+   ],
+   "answer": 0,
+   "hints": [
+    "اضغط «أعد» لتسمع الكلمة مرة ثانية.",
+    "الكلمة هي Orange."
+   ],
+   "solution": [
+    "Orange تعني برتقالة"
+   ],
+   "explanation": "Orange تعني برتقالة."
+  },
+  {
+   "id": "english.u2.l1.p4",
+   "type": "listenChoose",
+   "concept": "english.u2.l1.c1",
+   "prompt": "اضغط لتسمع الكلمة، ثم اختر صورتها",
+   "word": "Grapes",
+   "choices": [
+    "grapes",
+    "strawberry",
+    "orange",
+    "lemon"
+   ],
+   "answer": 0,
+   "hints": [
+    "اضغط «أعد» لتسمع الكلمة مرة ثانية.",
+    "الكلمة هي Grapes."
+   ],
+   "solution": [
+    "Grapes تعني عنب"
+   ],
+   "explanation": "Grapes تعني عنب."
+  },
+  {
+   "id": "english.u2.l1.p5",
+   "type": "listenChoose",
+   "concept": "english.u2.l1.c1",
+   "prompt": "اضغط لتسمع الكلمة، ثم اختر صورتها",
+   "word": "Lemon",
+   "choices": [
+    "lemon",
+    "banana",
+    "grapes",
+    "apple"
+   ],
+   "answer": 0,
+   "hints": [
+    "اضغط «أعد» لتسمع الكلمة مرة ثانية.",
+    "الكلمة هي Lemon."
+   ],
+   "solution": [
+    "Lemon تعني ليمونة"
+   ],
+   "explanation": "Lemon تعني ليمونة."
+  },
+  {
+   "id": "english.u2.l1.p6",
+   "type": "listenChoose",
+   "concept": "english.u2.l1.c1",
+   "prompt": "اضغط لتسمع الكلمة، ثم اختر صورتها",
+   "word": "Strawberry",
+   "choices": [
+    "strawberry",
+    "lemon",
+    "apple",
+    "orange"
+   ],
+   "answer": 0,
+   "hints": [
+    "اضغط «أعد» لتسمع الكلمة مرة ثانية.",
+    "الكلمة هي Strawberry."
+   ],
+   "solution": [
+    "Strawberry تعني فراولة"
+   ],
+   "explanation": "Strawberry تعني فراولة."
+  },
+  {
+   "id": "english.u2.l1.p7",
+   "type": "choice",
+   "concept": "english.u2.l1.c1",
+   "prompt": "ما معنى كلمة Apple؟",
+   "choices": [
+    "تفاحة",
+    "موزة",
+    "عنب",
+    "برتقالة"
+   ],
+   "answer": 0,
+   "hints": [
+    "هي فاكهة حمراء أو خضراء مستديرة."
+   ],
+   "solution": [
+    "Apple = تفاحة"
+   ],
+   "explanation": "Apple تعني تفاحة."
+  },
+  {
+   "id": "english.u2.l1.p8",
+   "type": "choice",
+   "concept": "english.u2.l1.c1",
+   "prompt": "ما معنى كلمة Grapes؟",
+   "choices": [
+    "عنب",
+    "موزة",
+    "ليمونة",
+    "فراولة"
+   ],
+   "answer": 0,
+   "hints": [
+    "فاكهة تأتي عناقيد صغيرة."
+   ],
+   "solution": [
+    "Grapes = عنب"
+   ],
+   "explanation": "Grapes تعني عنبًا."
+  },
+  {
+   "id": "english.u2.l1.p9",
+   "type": "choice",
+   "concept": "english.u2.l1.c1",
+   "prompt": "كيف نقول «موزة» بالإنجليزية؟",
+   "choices": [
+    "Banana",
+    "Lemon",
+    "Orange",
+    "Apple"
+   ],
+   "answer": 0,
+   "hints": [
+    "لونها أصفر وشكلها هلال."
+   ],
+   "solution": [
+    "موزة = Banana"
+   ],
+   "explanation": "موزة = Banana."
+  },
+  {
+   "id": "english.u2.l1.p10",
+   "type": "trueFalse",
+   "concept": "english.u2.l1.c1",
+   "prompt": "هل هذه العبارة صحيحة؟",
+   "statement": "كلمة Orange تعني «برتقالة».",
+   "answer": true,
+   "hints": [
+    "فاكهة برتقالية اللون."
+   ],
+   "solution": [
+    "Orange = برتقالة"
+   ],
+   "explanation": "صحيح."
+  },
+  {
+   "id": "english.u2.l1.p11",
+   "type": "trueFalse",
+   "concept": "english.u2.l1.c1",
+   "prompt": "هل هذه العبارة صحيحة؟",
+   "statement": "كلمة Lemon تعني «فراولة».",
+   "answer": false,
+   "hints": [
+    "Lemon فاكهة صفراء حامضة."
+   ],
+   "solution": [
+    "Lemon = ليمونة"
+   ],
+   "explanation": "Lemon تعني ليمونة."
+  },
+  {
+   "id": "english.u2.l1.p12",
+   "type": "matchPairs",
+   "concept": "english.u2.l1.c1",
+   "prompt": "وصّل كل كلمة بمعناها",
+   "pairs": [
+    {
+     "left": {
+      "text": "Apple"
+     },
+     "right": {
+      "text": "تفاحة"
+     }
+    },
+    {
+     "left": {
+      "text": "Banana"
+     },
+     "right": {
+      "text": "موزة"
+     }
+    },
+    {
+     "left": {
+      "text": "Lemon"
+     },
+     "right": {
+      "text": "ليمونة"
+     }
+    },
+    {
+     "left": {
+      "text": "Grapes"
+     },
+     "right": {
+      "text": "عنب"
+     }
+    }
+   ],
+   "hints": [
+    "ابدأ بالكلمات التي تعرفها جيدًا."
+   ],
+   "solution": [
+    "Apple = تفاحة",
+    "Banana = موزة",
+    "Lemon = ليمونة",
+    "Grapes = عنب"
+   ]
+  }
+ ],
+ "quiz": [
+  {
+   "id": "english.u2.l1.q1",
+   "type": "choice",
+   "concept": "english.u2.l1.c1",
+   "prompt": "ما معنى Strawberry؟",
+   "choices": [
+    "فراولة",
+    "عنب",
+    "تفاحة",
+    "ليمونة"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "english.u2.l1.q2",
+   "type": "choice",
+   "concept": "english.u2.l1.c1",
+   "prompt": "كيف نقول «عنب» بالإنجليزية؟",
+   "choices": [
+    "Grapes",
+    "Apple",
+    "Lemon",
+    "Banana"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "english.u2.l1.q3",
+   "type": "choice",
+   "concept": "english.u2.l1.c1",
+   "prompt": "ما معنى Lemon؟",
+   "choices": [
+    "ليمونة",
+    "برتقالة",
+    "موزة",
+    "فراولة"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "english.u2.l1.q4",
+   "type": "choice",
+   "concept": "english.u2.l1.c1",
+   "prompt": "أكمل: I eat an ____ . (تفاحة)",
+   "choices": [
+    "apple",
+    "banana",
+    "orange",
+    "lemon"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "english.u2.l1.q5",
+   "type": "choice",
+   "concept": "english.u2.l1.c1",
+   "prompt": "كيف نقول «برتقالة»؟",
+   "choices": [
+    "Orange",
+    "Lemon",
+    "Apple",
+    "Grapes"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "english.u2.l1.q6",
+   "type": "choice",
+   "concept": "english.u2.l1.c1",
+   "prompt": "ما معنى Banana؟",
+   "choices": [
+    "موزة",
+    "عنب",
+    "تفاحة",
+    "فراولة"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "english.u2.l1.q7",
+   "type": "listenChoose",
+   "concept": "english.u2.l1.c1",
+   "prompt": "اضغط لتسمع الكلمة، ثم اختر صورتها",
+   "word": "Apple",
+   "choices": [
+    "apple",
+    "orange",
+    "banana",
+    "grapes"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "english.u2.l1.q8",
+   "type": "listenChoose",
+   "concept": "english.u2.l1.c1",
+   "prompt": "اضغط لتسمع الكلمة، ثم اختر صورتها",
+   "word": "Strawberry",
+   "choices": [
+    "strawberry",
+    "lemon",
+    "apple",
+    "grapes"
+   ],
+   "answer": 0
+  }
+ ]
+}

@@ -1,0 +1,977 @@
+{
+  "_note": "تنبيه: عناوين المواد والوحدات والدروس والمفاهيم في هذا الملف مؤقتة وتنتظر مراجعة معلم قبل الاعتماد. JSON لا يدعم التعليقات، لذلك وُضعت الملاحظة في حقل يبدأ بشرطة سفلية يتجاهله الكود. الملف مولَّد من tools/content/build_catalog.js فلا يُعدَّل يدويًا.",
+  "grade": 5,
+  "subjects": [
+    {
+      "id": "math",
+      "title": "الرياضيات",
+      "icon": "calc",
+      "color": "teal",
+      "order": 1,
+      "units": [
+        {
+          "id": "math.u1",
+          "title": "الأعداد",
+          "order": 1,
+          "lessons": [
+            {
+              "id": "math.u1.l1",
+              "title": "الأعداد",
+              "estimatedMinutes": 15,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "math.u1.l1.c1",
+                  "title": "قراءة الأعداد الكبيرة وكتابتها"
+                },
+                {
+                  "id": "math.u1.l1.c2",
+                  "title": "القيمة المنزلية"
+                }
+              ]
+            },
+            {
+              "id": "math.u1.l2",
+              "title": "مقارنة الأعداد وترتيبها",
+              "estimatedMinutes": 12,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "math.u1.l2.c1",
+                  "title": "مقارنة عددين"
+                },
+                {
+                  "id": "math.u1.l2.c2",
+                  "title": "ترتيب الأعداد"
+                }
+              ]
+            },
+            {
+              "id": "math.u1.l3",
+              "title": "التقريب",
+              "estimatedMinutes": 12,
+              "order": 3,
+              "concepts": [
+                {
+                  "id": "math.u1.l3.c1",
+                  "title": "التقريب إلى أقرب عشرة"
+                },
+                {
+                  "id": "math.u1.l3.c2",
+                  "title": "التقريب إلى أقرب مئة"
+                }
+              ]
+            },
+            {
+              "id": "math.u1.l4",
+              "title": "الأعداد الزوجية والفردية",
+              "estimatedMinutes": 10,
+              "order": 4,
+              "concepts": [
+                {
+                  "id": "math.u1.l4.c1",
+                  "title": "الأعداد الزوجية"
+                },
+                {
+                  "id": "math.u1.l4.c2",
+                  "title": "الأعداد الفردية"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "math.u2",
+          "title": "الجمع والطرح",
+          "order": 2,
+          "lessons": [
+            {
+              "id": "math.u2.l1",
+              "title": "الجمع",
+              "estimatedMinutes": 12,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "math.u2.l1.c1",
+                  "title": "جمع الأعداد الكبيرة"
+                },
+                {
+                  "id": "math.u2.l1.c2",
+                  "title": "تقدير الناتج"
+                }
+              ]
+            },
+            {
+              "id": "math.u2.l2",
+              "title": "الطرح",
+              "estimatedMinutes": 12,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "math.u2.l2.c1",
+                  "title": "طرح الأعداد الكبيرة"
+                },
+                {
+                  "id": "math.u2.l2.c2",
+                  "title": "العلاقة بين الجمع والطرح"
+                }
+              ]
+            },
+            {
+              "id": "math.u2.l3",
+              "title": "الجمع مع إعادة التجميع",
+              "estimatedMinutes": 15,
+              "order": 3,
+              "concepts": [
+                {
+                  "id": "math.u2.l3.c1",
+                  "title": "إعادة التجميع في الجمع"
+                },
+                {
+                  "id": "math.u2.l3.c2",
+                  "title": "التحقق من الناتج"
+                }
+              ]
+            },
+            {
+              "id": "math.u2.l4",
+              "title": "الطرح مع الاستلاف",
+              "estimatedMinutes": 15,
+              "order": 4,
+              "concepts": [
+                {
+                  "id": "math.u2.l4.c1",
+                  "title": "الاستلاف في الطرح"
+                },
+                {
+                  "id": "math.u2.l4.c2",
+                  "title": "التحقق بالجمع"
+                }
+              ]
+            },
+            {
+              "id": "math.u2.l5",
+              "title": "مسائل كلامية",
+              "estimatedMinutes": 14,
+              "order": 5,
+              "concepts": [
+                {
+                  "id": "math.u2.l5.c1",
+                  "title": "اختيار العملية المناسبة"
+                },
+                {
+                  "id": "math.u2.l5.c2",
+                  "title": "حل مسألة بخطوتين"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "math.u3",
+          "title": "الكسور",
+          "order": 3,
+          "lessons": [
+            {
+              "id": "math.u3.l1",
+              "title": "مفهوم الكسر",
+              "estimatedMinutes": 14,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "math.u3.l1.c1",
+                  "title": "مفهوم الكسر"
+                },
+                {
+                  "id": "math.u3.l1.c2",
+                  "title": "قراءة الكسور وكتابتها"
+                }
+              ]
+            },
+            {
+              "id": "math.u3.l2",
+              "title": "مقارنة الكسور",
+              "estimatedMinutes": 15,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "math.u3.l2.c1",
+                  "title": "مقارنة كسرين"
+                },
+                {
+                  "id": "math.u3.l2.c2",
+                  "title": "ترتيب الكسور"
+                }
+              ]
+            },
+            {
+              "id": "math.u3.l3",
+              "title": "الكسور المتكافئة",
+              "estimatedMinutes": 16,
+              "order": 3,
+              "concepts": [
+                {
+                  "id": "math.u3.l3.c1",
+                  "title": "الكسور المتكافئة"
+                },
+                {
+                  "id": "math.u3.l3.c2",
+                  "title": "تبسيط الكسور"
+                }
+              ]
+            },
+            {
+              "id": "math.u3.l4",
+              "title": "جمع الكسور",
+              "estimatedMinutes": 16,
+              "order": 4,
+              "concepts": [
+                {
+                  "id": "math.u3.l4.c1",
+                  "title": "جمع كسور متشابهة المقام"
+                },
+                {
+                  "id": "math.u3.l4.c2",
+                  "title": "جمع كسور مختلفة المقام"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "math.u4",
+          "title": "الهندسة",
+          "order": 4,
+          "lessons": [
+            {
+              "id": "math.u4.l1",
+              "title": "المثلثات",
+              "estimatedMinutes": 12,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "math.u4.l1.c1",
+                  "title": "أنواع المثلثات"
+                },
+                {
+                  "id": "math.u4.l1.c2",
+                  "title": "زوايا المثلث"
+                }
+              ]
+            },
+            {
+              "id": "math.u4.l2",
+              "title": "الأشكال الرباعية",
+              "estimatedMinutes": 12,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "math.u4.l2.c1",
+                  "title": "المربع والمستطيل"
+                },
+                {
+                  "id": "math.u4.l2.c2",
+                  "title": "متوازي الأضلاع"
+                }
+              ]
+            },
+            {
+              "id": "math.u4.l3",
+              "title": "المحيط",
+              "estimatedMinutes": 14,
+              "order": 3,
+              "concepts": [
+                {
+                  "id": "math.u4.l3.c1",
+                  "title": "محيط المضلع"
+                },
+                {
+                  "id": "math.u4.l3.c2",
+                  "title": "محيط المستطيل"
+                }
+              ]
+            },
+            {
+              "id": "math.u4.l4",
+              "title": "المساحة",
+              "estimatedMinutes": 14,
+              "order": 4,
+              "concepts": [
+                {
+                  "id": "math.u4.l4.c1",
+                  "title": "مساحة المستطيل"
+                },
+                {
+                  "id": "math.u4.l4.c2",
+                  "title": "مساحة المربع"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "math.u5",
+          "title": "القياس",
+          "order": 5,
+          "lessons": [
+            {
+              "id": "math.u5.l1",
+              "title": "الطول",
+              "estimatedMinutes": 10,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "math.u5.l1.c1",
+                  "title": "وحدات الطول"
+                },
+                {
+                  "id": "math.u5.l1.c2",
+                  "title": "التحويل بين الوحدات"
+                }
+              ]
+            },
+            {
+              "id": "math.u5.l2",
+              "title": "الكتلة والسعة",
+              "estimatedMinutes": 12,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "math.u5.l2.c1",
+                  "title": "وحدات الكتلة"
+                },
+                {
+                  "id": "math.u5.l2.c2",
+                  "title": "وحدات السعة"
+                }
+              ]
+            },
+            {
+              "id": "math.u5.l3",
+              "title": "الزمن",
+              "estimatedMinutes": 12,
+              "order": 3,
+              "concepts": [
+                {
+                  "id": "math.u5.l3.c1",
+                  "title": "قراءة الساعة"
+                },
+                {
+                  "id": "math.u5.l3.c2",
+                  "title": "حساب الزمن المنقضي"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arabic",
+      "title": "العربية",
+      "icon": "book",
+      "color": "coral",
+      "order": 2,
+      "units": [
+        {
+          "id": "arabic.u1",
+          "title": "القراءة والفهم",
+          "order": 1,
+          "lessons": [
+            {
+              "id": "arabic.u1.l1",
+              "title": "قراءة نص قصير",
+              "estimatedMinutes": 12,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "arabic.u1.l1.c1",
+                  "title": "القراءة الجهرية"
+                },
+                {
+                  "id": "arabic.u1.l1.c2",
+                  "title": "فهم المقروء"
+                }
+              ]
+            },
+            {
+              "id": "arabic.u1.l2",
+              "title": "الفكرة الرئيسية",
+              "estimatedMinutes": 14,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "arabic.u1.l2.c1",
+                  "title": "تحديد الفكرة الرئيسية"
+                },
+                {
+                  "id": "arabic.u1.l2.c2",
+                  "title": "الأفكار الفرعية"
+                }
+              ]
+            },
+            {
+              "id": "arabic.u1.l3",
+              "title": "المعنى من السياق",
+              "estimatedMinutes": 12,
+              "order": 3,
+              "concepts": [
+                {
+                  "id": "arabic.u1.l3.c1",
+                  "title": "معنى الكلمة من السياق"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "arabic.u2",
+          "title": "قواعد اللغة",
+          "order": 2,
+          "lessons": [
+            {
+              "id": "arabic.u2.l1",
+              "title": "الاسم والفعل والحرف",
+              "estimatedMinutes": 15,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "arabic.u2.l1.c1",
+                  "title": "التمييز بين الاسم والفعل والحرف"
+                }
+              ]
+            },
+            {
+              "id": "arabic.u2.l2",
+              "title": "الجملة الاسمية",
+              "estimatedMinutes": 15,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "arabic.u2.l2.c1",
+                  "title": "المبتدأ والخبر"
+                },
+                {
+                  "id": "arabic.u2.l2.c2",
+                  "title": "إعراب الجملة الاسمية"
+                }
+              ]
+            },
+            {
+              "id": "arabic.u2.l3",
+              "title": "الجملة الفعلية",
+              "estimatedMinutes": 15,
+              "order": 3,
+              "concepts": [
+                {
+                  "id": "arabic.u2.l3.c1",
+                  "title": "الفعل والفاعل"
+                },
+                {
+                  "id": "arabic.u2.l3.c2",
+                  "title": "المفعول به"
+                }
+              ]
+            },
+            {
+              "id": "arabic.u2.l4",
+              "title": "الضمائر",
+              "estimatedMinutes": 12,
+              "order": 4,
+              "concepts": [
+                {
+                  "id": "arabic.u2.l4.c1",
+                  "title": "ضمائر الغائب والمخاطب والمتكلم"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "arabic.u3",
+          "title": "الكتابة",
+          "order": 3,
+          "lessons": [
+            {
+              "id": "arabic.u3.l1",
+              "title": "كتابة فقرة",
+              "estimatedMinutes": 14,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "arabic.u3.l1.c1",
+                  "title": "جملة الافتتاح"
+                },
+                {
+                  "id": "arabic.u3.l1.c2",
+                  "title": "ترتيب الأفكار"
+                }
+              ]
+            },
+            {
+              "id": "arabic.u3.l2",
+              "title": "كتابة رسالة",
+              "estimatedMinutes": 14,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "arabic.u3.l2.c1",
+                  "title": "أجزاء الرسالة"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "english",
+      "title": "الإنجليزية",
+      "icon": "chat",
+      "color": "purple",
+      "order": 3,
+      "units": [
+        {
+          "id": "english.u1",
+          "title": "My Family",
+          "order": 1,
+          "lessons": [
+            {
+              "id": "english.u1.l1",
+              "title": "Greetings",
+              "estimatedMinutes": 10,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "english.u1.l1.c1",
+                  "title": "Greetings"
+                }
+              ]
+            },
+            {
+              "id": "english.u1.l2",
+              "title": "Family Members",
+              "estimatedMinutes": 12,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "english.u1.l2.c1",
+                  "title": "Family Members"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "english.u2",
+          "title": "Food and Fruits",
+          "order": 2,
+          "lessons": [
+            {
+              "id": "english.u2.l1",
+              "title": "Fruits",
+              "estimatedMinutes": 12,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "english.u2.l1.c1",
+                  "title": "Fruit words"
+                }
+              ]
+            },
+            {
+              "id": "english.u2.l2",
+              "title": "Vegetables",
+              "estimatedMinutes": 12,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "english.u2.l2.c1",
+                  "title": "Vegetable words"
+                }
+              ]
+            },
+            {
+              "id": "english.u2.l3",
+              "title": "At the Market",
+              "estimatedMinutes": 14,
+              "order": 3,
+              "concepts": [
+                {
+                  "id": "english.u2.l3.c1",
+                  "title": "Buying and selling phrases"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "english.u3",
+          "title": "Grammar",
+          "order": 3,
+          "lessons": [
+            {
+              "id": "english.u3.l1",
+              "title": "Present simple",
+              "estimatedMinutes": 14,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "english.u3.l1.c1",
+                  "title": "Present simple statements"
+                }
+              ]
+            },
+            {
+              "id": "english.u3.l2",
+              "title": "Past simple",
+              "estimatedMinutes": 15,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "english.u3.l2.c1",
+                  "title": "Regular past verbs"
+                },
+                {
+                  "id": "english.u3.l2.c2",
+                  "title": "Irregular past verbs"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "science",
+      "title": "العلوم",
+      "icon": "leaf",
+      "color": "blue",
+      "order": 4,
+      "units": [
+        {
+          "id": "science.u1",
+          "title": "المادة وخصائصها",
+          "order": 1,
+          "lessons": [
+            {
+              "id": "science.u1.l1",
+              "title": "حالات المادة",
+              "estimatedMinutes": 12,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "science.u1.l1.c1",
+                  "title": "الصلب والسائل والغاز"
+                }
+              ]
+            },
+            {
+              "id": "science.u1.l2",
+              "title": "الخواص الفيزيائية",
+              "estimatedMinutes": 12,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "science.u1.l2.c1",
+                  "title": "الكتلة والحجم"
+                },
+                {
+                  "id": "science.u1.l2.c2",
+                  "title": "الذوبان"
+                }
+              ]
+            },
+            {
+              "id": "science.u1.l3",
+              "title": "المخاليط",
+              "estimatedMinutes": 12,
+              "order": 3,
+              "concepts": [
+                {
+                  "id": "science.u1.l3.c1",
+                  "title": "المخلوط والمحلول"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "science.u2",
+          "title": "الكائنات الحية",
+          "order": 2,
+          "lessons": [
+            {
+              "id": "science.u2.l1",
+              "title": "النباتات",
+              "estimatedMinutes": 14,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "science.u2.l1.c1",
+                  "title": "أجزاء النبات"
+                },
+                {
+                  "id": "science.u2.l1.c2",
+                  "title": "البناء الضوئي"
+                }
+              ]
+            },
+            {
+              "id": "science.u2.l2",
+              "title": "الحيوانات",
+              "estimatedMinutes": 12,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "science.u2.l2.c1",
+                  "title": "تصنيف الحيوانات"
+                }
+              ]
+            },
+            {
+              "id": "science.u2.l3",
+              "title": "السلاسل الغذائية",
+              "estimatedMinutes": 14,
+              "order": 3,
+              "concepts": [
+                {
+                  "id": "science.u2.l3.c1",
+                  "title": "المنتجات والمستهلكات"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "science.u3",
+          "title": "الأرض والفضاء",
+          "order": 3,
+          "lessons": [
+            {
+              "id": "science.u3.l1",
+              "title": "دوران الأرض",
+              "estimatedMinutes": 12,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "science.u3.l1.c1",
+                  "title": "الليل والنهار"
+                },
+                {
+                  "id": "science.u3.l1.c2",
+                  "title": "الفصول"
+                }
+              ]
+            },
+            {
+              "id": "science.u3.l2",
+              "title": "الطقس",
+              "estimatedMinutes": 12,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "science.u3.l2.c1",
+                  "title": "عناصر الطقس"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "social",
+      "title": "الاجتماعيات",
+      "icon": "map",
+      "color": "slate",
+      "order": 5,
+      "units": [
+        {
+          "id": "social.u1",
+          "title": "فلسطين",
+          "order": 1,
+          "lessons": [
+            {
+              "id": "social.u1.l1",
+              "title": "موقع فلسطين",
+              "estimatedMinutes": 12,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "social.u1.l1.c1",
+                  "title": "الموقع والحدود"
+                }
+              ]
+            },
+            {
+              "id": "social.u1.l2",
+              "title": "المدن الفلسطينية",
+              "estimatedMinutes": 14,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "social.u1.l2.c1",
+                  "title": "مدن الضفة وغزة"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "social.u2",
+          "title": "المجتمع",
+          "order": 2,
+          "lessons": [
+            {
+              "id": "social.u2.l1",
+              "title": "الأسرة",
+              "estimatedMinutes": 10,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "social.u2.l1.c1",
+                  "title": "الأسرة"
+                }
+              ]
+            },
+            {
+              "id": "social.u2.l2",
+              "title": "الحقوق والواجبات",
+              "estimatedMinutes": 12,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "social.u2.l2.c1",
+                  "title": "حقوق الطفل"
+                },
+                {
+                  "id": "social.u2.l2.c2",
+                  "title": "واجبات المواطن"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "islamic",
+      "title": "التربية الإسلامية",
+      "icon": "moonstar",
+      "color": "amber",
+      "order": 6,
+      "units": [
+        {
+          "id": "islamic.u1",
+          "title": "الأخلاق",
+          "order": 1,
+          "lessons": [
+            {
+              "id": "islamic.u1.l1",
+              "title": "الصدق",
+              "estimatedMinutes": 10,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "islamic.u1.l1.c1",
+                  "title": "الصدق"
+                }
+              ]
+            },
+            {
+              "id": "islamic.u1.l2",
+              "title": "الأمانة",
+              "estimatedMinutes": 10,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "islamic.u1.l2.c1",
+                  "title": "الأمانة"
+                }
+              ]
+            },
+            {
+              "id": "islamic.u1.l3",
+              "title": "بر الوالدين",
+              "estimatedMinutes": 12,
+              "order": 3,
+              "concepts": [
+                {
+                  "id": "islamic.u1.l3.c1",
+                  "title": "بر الوالدين"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "islamic.u2",
+          "title": "العبادات",
+          "order": 2,
+          "lessons": [
+            {
+              "id": "islamic.u2.l1",
+              "title": "الصلاة",
+              "estimatedMinutes": 12,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "islamic.u2.l1.c1",
+                  "title": "أركان الصلاة"
+                },
+                {
+                  "id": "islamic.u2.l1.c2",
+                  "title": "أوقات الصلاة"
+                }
+              ]
+            },
+            {
+              "id": "islamic.u2.l2",
+              "title": "الصيام",
+              "estimatedMinutes": 12,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "islamic.u2.l2.c1",
+                  "title": "آداب الصيام"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "islamic.u3",
+          "title": "السيرة",
+          "order": 3,
+          "lessons": [
+            {
+              "id": "islamic.u3.l1",
+              "title": "حياة النبي ﷺ في مكة",
+              "estimatedMinutes": 14,
+              "order": 1,
+              "concepts": [
+                {
+                  "id": "islamic.u3.l1.c1",
+                  "title": "حياة النبي ﷺ في مكة"
+                }
+              ]
+            },
+            {
+              "id": "islamic.u3.l2",
+              "title": "الهجرة إلى المدينة",
+              "estimatedMinutes": 14,
+              "order": 2,
+              "concepts": [
+                {
+                  "id": "islamic.u3.l2.c1",
+                  "title": "الهجرة إلى المدينة"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
