@@ -8,6 +8,9 @@ import '../features/account/account_screen.dart';
 import '../features/account/student_code_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/launch/launch_screen.dart';
+import '../features/learning/result_screen.dart';
+import '../features/learning/review_screen.dart';
+import '../features/learning/round_end_screen.dart';
 import '../features/learning/round_engine.dart';
 import '../features/learning/round_screen.dart';
 import '../features/learning/subjects_screen.dart';
@@ -154,9 +157,34 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ),
       ),
-      later(AppRoutes.roundEndPattern),
-      later(AppRoutes.resultPattern),
-      later(AppRoutes.reviewPattern),
+      GoRoute(
+        path: AppRoutes.roundEndPattern,
+        redirect: requireActiveProfile,
+        pageBuilder: (context, state) => appPage(
+          state: state,
+          child: RoundEndScreen(
+            attemptId: int.tryParse(state.pathParameters['attemptId']!) ?? -1,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.resultPattern,
+        redirect: requireActiveProfile,
+        pageBuilder: (context, state) => appPage(
+          state: state,
+          child: ResultScreen(
+            attemptId: int.tryParse(state.pathParameters['attemptId']!) ?? -1,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.reviewPattern,
+        redirect: requireActiveProfile,
+        pageBuilder: (context, state) => appPage(
+          state: state,
+          child: ReviewScreen(lessonId: state.pathParameters['lessonId']!),
+        ),
+      ),
     ],
   );
 });

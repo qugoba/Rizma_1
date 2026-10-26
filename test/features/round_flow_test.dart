@@ -72,6 +72,22 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> setMastery(
+    WidgetTester tester,
+    AppDatabase db,
+    String profileId,
+    String concept,
+    double value,
+  ) => onDb(
+    tester,
+    () => db.activityDao.upsertMastery(
+      profileId: profileId,
+      conceptId: concept,
+      mastery: value,
+      now: DateTime(2026, 10, 8),
+    ),
+  );
+
   Future<Attempt> lastAttempt(WidgetTester tester, AppDatabase db) async {
     final profile = (await tester.runAsync(
       () => db.profilesDao.getAll(),
@@ -112,6 +128,7 @@ void main() {
           );
 
           await tapText(tester, ArLearn.finishRound);
+          expect(find.text(ArLearn.roundEndTitle), findsOneWidget);
           final a = await lastAttempt(tester, db);
           expect(a.score, 1);
           expect(a.total, 1);
@@ -356,6 +373,32 @@ void main() {
     });
 
     testWidgets(
+      'الجولة المكرّرة لا تعطي نجومًا جديدة وتُخبر الطالب',
+      (tester) => scenario(
+        tester,
+        seed: seedProfile,
+        overrides: [
+          contentWith(
+            practice: [choiceQ(hints: const [], solution: const [])],
+          ),
+        ],
+        (db) async {
+          Future<void> playRight() async {
+            await open(tester, '/learn/round/$lesson');
+            await tapText(tester, '4');
+            await tapText(tester, ArLearn.finishRound);
+          }
+
+          await playRight();
+          expect(find.text('+3'), findsOneWidget);
+          await playRight();
+          expect(find.text('+0'), findsOneWidget);
+          expect(find.text(ArLearn.roundEndNoNewStars), findsOneWidget);
+        },
+      ),
+    );
+
+    testWidgets(
       'زر الإغلاق يسأل قبل الخروج، والبقاء يكمل الجولة، والخروج لا يحفظ شيئًا',
       (tester) => scenario(
         tester,
@@ -431,6 +474,10 @@ void main() {
         }
 
         final correct = quiz.length - 2;
+        final percent = (correct * 100 / quiz.length).round();
+        expect(find.text('$percent%'), findsOneWidget);
+        expect(find.text(ArLearn.resultHeadingGood('أنس')), findsOneWidget);
+        expect(find.text(ArLearn.resultStartReview), findsOneWidget);
 
         final a = await lastAttempt(tester, db);
         expect(a.score, correct);
@@ -448,6 +495,44 @@ void main() {
         await open(tester, '/learn/quiz/$lesson');
         final button = tester.widget<RizmaButton>(find.byType(RizmaButton));
         expect(button.onPressed, isNull);
+      }),
+    );
+  });
+
+  group('خطة المراجعة', () {
+    testWidgets(
+      'تعرض أضعف مفهوم وخطواتها، و«تابع» يفتح أول خطوة',
+      (tester) => scenario(tester, seed: seedProfile, (db) async {
+        final profile = (await tester.runAsync(
+          () => db.profilesDao.getAll(),
+        ))!.single;
+        await setMastery(tester, db, profile.id, 'math.u1.l1.c1', 0.9);
+        await setMastery(tester, db, profile.id, 'math.u1.l1.c2', 0.4);
+        await open(tester, '/learn/review/$lesson');
+        expect(find.text(ArLearn.reviewTitle), findsOneWidget);
+        expect(find.text('40%'), findsOneWidget);
+        expect(find.text(ArLearn.reviewStepExplain), findsOneWidget);
+        expect(find.text(ArLearn.reviewStepQuiz), findsOneWidget);
+
+        await tapText(
+          tester,
+          ArLearn.reviewContinue(ArLearn.reviewStepExplain),
+        );
+        expect(find.text(ArLearn.explainTitle), findsOneWidget);
+      }),
+    );
+
+    testWidgets(
+      'كل المفاهيم متقنة ← رسالة «أتقنت هذا الدرس»',
+      (tester) => scenario(tester, seed: seedProfile, (db) async {
+        final profile = (await tester.runAsync(
+          () => db.profilesDao.getAll(),
+        ))!.single;
+        for (final id in ['math.u1.l1.c1', 'math.u1.l1.c2']) {
+          await setMastery(tester, db, profile.id, id, 0.95);
+        }
+        await open(tester, '/learn/review/$lesson');
+        expect(find.text(ArLearn.reviewDoneTitle), findsOneWidget);
       }),
     );
   });
