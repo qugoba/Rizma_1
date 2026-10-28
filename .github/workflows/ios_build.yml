@@ -1,6 +1,10 @@
 name: Build iOS Simulator
 
 on:
+  push:
+    branches:
+      - main
+      - feature/ios-build
   workflow_dispatch:
 
 jobs:
