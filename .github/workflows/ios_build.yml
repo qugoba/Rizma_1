@@ -1,0 +1,34 @@
+name: Build iOS Simulator
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build iOS Simulator
+        run: flutter build ios --simulator --debug
+
+      - name: Compress iOS App
+        run: |
+          cd build/ios/iphonesimulator
+          zip -r RIZMA-iOS.zip Runner.app
+
+      - name: Upload iOS Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: RIZMA-iOS
+          path: build/ios/iphonesimulator/RIZMA-iOS.zip
