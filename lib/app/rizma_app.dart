@@ -6,7 +6,9 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_theme.dart';
 import '../core/theme/rizma_look.dart';
 import '../features/account/account_providers.dart';
+import '../features/downloads/download_providers.dart';
 import '../features/profiles/active_profile_provider.dart';
+import '../features/sync/sync_providers.dart';
 import 'router.dart';
 
 const _maxContentWidth = 480.0;
@@ -60,7 +62,7 @@ class RizmaApp extends ConsumerWidget {
                 data: media.copyWith(
                   textScaler: TextScaler.linear(systemScale * fontScale),
                 ),
-                child: child!,
+                child: SyncScheduler(child: DownloadScheduler(child: child!)),
               ),
             ),
           ),

@@ -31,12 +31,6 @@ class ProfilePickerScreen extends ConsumerWidget {
     if (context.mounted) context.go(AppRoutes.home);
   }
 
-  void _showRestoreMessage(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text(ArStrings.restoreNeedsInternet)),
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profiles = ref.watch(profilesProvider).value;
@@ -85,7 +79,7 @@ class ProfilePickerScreen extends ConsumerWidget {
               ),
               const _SafeCard(),
               TextButton(
-                onPressed: () => _showRestoreMessage(context),
+                onPressed: () => context.push(AppRoutes.restore),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.teal,
                   textStyle: AppTextStyles.label14,

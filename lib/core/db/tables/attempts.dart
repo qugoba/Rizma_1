@@ -4,7 +4,7 @@ import '../enums.dart';
 import 'profiles.dart';
 
 class Attempts extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  TextColumn get id => text()();
   TextColumn get profileId =>
       text().references(Profiles, #id, onDelete: KeyAction.cascade)();
   TextColumn get activityId => text()();
@@ -16,5 +16,13 @@ class Attempts extends Table {
   IntColumn get hintsUsed => integer().withDefault(const Constant(0))();
 
   TextColumn get detailsJson => text().nullable()();
+
   DateTimeColumn get createdAt => dateTime()();
+
+  DateTimeColumn get syncedAt => dateTime().nullable()();
+
+  DateTimeColumn get serverReceivedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }

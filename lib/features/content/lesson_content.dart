@@ -128,6 +128,29 @@ class VideoContent {
   final String? file;
 }
 
+class LessonAttachment {
+  const LessonAttachment({
+    required this.title,
+    required this.file,
+    required this.sizeKb,
+    this.type = 'pdf',
+  });
+
+  factory LessonAttachment.fromJson(Map<String, dynamic> json) =>
+      LessonAttachment(
+        title: json['title'] as String,
+        file: json['file'] as String,
+        sizeKb: json['sizeKb'] as int,
+        type: (json['type'] as String?) ?? 'pdf',
+      );
+
+  final String title;
+  final String file;
+  final int sizeKb;
+
+  final String type;
+}
+
 class WordItem {
   const WordItem({
     required this.en,
@@ -165,6 +188,7 @@ class LessonContent {
     this.words = const [],
     this.practice = const [],
     this.quiz = const [],
+    this.attachments = const [],
   });
 
   factory LessonContent.fromJson(Map<String, dynamic> json) {
@@ -183,6 +207,7 @@ class LessonContent {
       words: list('words', WordItem.fromJson),
       practice: list('practice', Question.fromJson),
       quiz: list('quiz', Question.fromJson),
+      attachments: list('attachments', LessonAttachment.fromJson),
     );
   }
 
@@ -194,6 +219,8 @@ class LessonContent {
   final List<WordItem> words;
   final List<Question> practice;
   final List<Question> quiz;
+
+  final List<LessonAttachment> attachments;
 
   bool has(LessonPart part) => switch (part) {
     LessonPart.pack => pages.isNotEmpty,

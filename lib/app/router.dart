@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_text_styles.dart';
 import '../features/account/account_screen.dart';
 import '../features/account/student_code_screen.dart';
+import '../features/learning/attachment_screen.dart';
+import '../core/theme/app_colors.dart';
+import '../core/theme/app_text_styles.dart';
 import '../features/home/home_screen.dart';
+import '../features/kids/kids_game_screen.dart';
 import '../features/launch/launch_screen.dart';
 import '../features/learning/lesson_hub_screen.dart';
+import '../features/learning/lesson_part_screen.dart';
 import '../features/learning/lessons_screen.dart';
 import '../features/learning/result_screen.dart';
 import '../features/learning/review_screen.dart';
@@ -21,9 +24,11 @@ import '../features/onboarding/create_profile_draft.dart';
 import '../features/onboarding/create_profile_step1_screen.dart';
 import '../features/onboarding/create_profile_step2_screen.dart';
 import '../features/onboarding/welcome_screen.dart';
-import '../features/profiles/pin_entry_screen.dart';
-import '../features/profiles/profile_picker_screen.dart';
 import '../features/profiles/active_profile_provider.dart';
+import '../features/profiles/pin_entry_screen.dart';
+import '../features/progress/progress_screen.dart';
+import '../features/wardrobe/wardrobe_screen.dart';
+import '../features/profiles/profile_picker_screen.dart';
 import 'page_transitions.dart';
 import 'routes.dart';
 
@@ -33,11 +38,11 @@ final routerProvider = Provider<GoRouter>((ref) {
     return active.hasValue && active.value == null ? AppRoutes.launch : null;
   }
 
-  Widget soon(GoRouterState state) => const _ComingSoonScreen();
   GoRoute later(String path) => GoRoute(
     path: path,
+    redirect: requireActiveProfile,
     pageBuilder: (context, state) =>
-        appPage(state: state, child: soon(state)),
+        appPage(state: state, child: const _ComingSoonScreen()),
   );
 
   return GoRouter(
@@ -74,11 +79,68 @@ final routerProvider = Provider<GoRouter>((ref) {
             appPage(state: state, child: const CreateProfileStep2Screen()),
       ),
       GoRoute(
+        path: AppRoutes.profiles,
+        pageBuilder: (context, state) => appPage(
+          state: state,
+          child: const ProfilePickerScreen(),
+          motion: PageMotion.tab,
+        ),
+      ),
+      later(AppRoutes.restore),
+      GoRoute(
+        path: AppRoutes.pinPattern,
+        pageBuilder: (context, state) => appPage(
+          state: state,
+          child: PinEntryScreen(profileId: state.pathParameters['id']!),
+        ),
+      ),
+      GoRoute(
         path: AppRoutes.home,
         redirect: requireActiveProfile,
         pageBuilder: (context, state) => appPage(
           state: state,
           child: const HomeScreen(),
+          motion: PageMotion.tab,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.account,
+        redirect: requireActiveProfile,
+        pageBuilder: (context, state) => appPage(
+          state: state,
+          child: const AccountScreen(),
+          motion: PageMotion.tab,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.kidsGame,
+        redirect: requireActiveProfile,
+        pageBuilder: (context, state) =>
+            appPage(state: state, child: const KidsGameScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.wardrobe,
+        redirect: requireActiveProfile,
+        pageBuilder: (context, state) =>
+            appPage(state: state, child: const WardrobeScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.studentCode,
+        redirect: requireActiveProfile,
+        pageBuilder: (context, state) =>
+            appPage(state: state, child: const StudentCodeScreen()),
+      ),
+      later(AppRoutes.downloads),
+      later(AppRoutes.downloadsChoose),
+      later(AppRoutes.share),
+      later(AppRoutes.shareWifi),
+      later(AppRoutes.receive),
+      GoRoute(
+        path: AppRoutes.progress,
+        redirect: requireActiveProfile,
+        pageBuilder: (context, state) => appPage(
+          state: state,
+          child: const ProgressScreen(),
           motion: PageMotion.tab,
         ),
       ),
@@ -100,40 +162,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
-        path: AppRoutes.profiles,
-        pageBuilder: (context, state) => appPage(
-          state: state,
-          child: const ProfilePickerScreen(),
-          motion: PageMotion.tab,
-        ),
-      ),
-      GoRoute(
-        path: AppRoutes.pinPattern,
-        pageBuilder: (context, state) => appPage(
-          state: state,
-          child: PinEntryScreen(profileId: state.pathParameters['id']!),
-        ),
-      ),
-      GoRoute(
-        path: AppRoutes.account,
-        redirect: requireActiveProfile,
-        pageBuilder: (context, state) => appPage(
-          state: state,
-          child: const AccountScreen(),
-          motion: PageMotion.tab,
-        ),
-      ),
-      GoRoute(
-        path: AppRoutes.studentCode,
-        redirect: requireActiveProfile,
-        pageBuilder: (context, state) =>
-            appPage(state: state, child: const StudentCodeScreen()),
-      ),
-      later(AppRoutes.wardrobe),
-      later(AppRoutes.downloads),
-      later(AppRoutes.progress),
-      later(AppRoutes.kidsGame),
-      GoRoute(
         path: AppRoutes.lessonsPattern,
         redirect: requireActiveProfile,
         pageBuilder: (context, state) => appPage(
@@ -149,7 +177,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           child: LessonHubScreen(lessonId: state.pathParameters['lessonId']!),
         ),
       ),
-      later(AppRoutes.partPattern),
       GoRoute(
         path: AppRoutes.roundPattern,
         redirect: requireActiveProfile,
@@ -178,9 +205,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         redirect: requireActiveProfile,
         pageBuilder: (context, state) => appPage(
           state: state,
-          child: RoundEndScreen(
-            attemptId: int.tryParse(state.pathParameters['attemptId']!) ?? -1,
-          ),
+          child: RoundEndScreen(attemptId: state.pathParameters['attemptId']!),
         ),
       ),
       GoRoute(
@@ -188,9 +213,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         redirect: requireActiveProfile,
         pageBuilder: (context, state) => appPage(
           state: state,
-          child: ResultScreen(
-            attemptId: int.tryParse(state.pathParameters['attemptId']!) ?? -1,
-          ),
+          child: ResultScreen(attemptId: state.pathParameters['attemptId']!),
         ),
       ),
       GoRoute(
@@ -199,6 +222,35 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => appPage(
           state: state,
           child: ReviewScreen(lessonId: state.pathParameters['lessonId']!),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.lessonFilePattern,
+        redirect: requireActiveProfile,
+        pageBuilder: (context, state) => appPage(
+          state: state,
+          child: AttachmentScreen(
+            lessonId: state.pathParameters['lessonId']!,
+            index: int.tryParse(state.pathParameters['index']!) ?? -1,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.partPattern,
+        redirect: (context, state) {
+          final redirect = requireActiveProfile(context, state);
+          if (redirect != null) return redirect;
+          final id = state.pathParameters['lessonId']!;
+          return lessonPartScreen(id, state.pathParameters['part']!) == null
+              ? AppRoutes.lesson(id)
+              : null;
+        },
+        pageBuilder: (context, state) => appPage(
+          state: state,
+          child: lessonPartScreen(
+            state.pathParameters['lessonId']!,
+            state.pathParameters['part']!,
+          )!,
         ),
       ),
     ],
@@ -213,9 +265,7 @@ class _ComingSoonScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.mute,
       appBar: AppBar(leading: const BackButton()),
-      body: Center(
-        child: Text('قريبًا', style: AppTextStyles.heading22),
-      ),
+      body: Center(child: Text('قريبًا', style: AppTextStyles.heading22)),
     );
   }
 }

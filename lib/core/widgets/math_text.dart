@@ -27,11 +27,25 @@ class MathText extends StatelessWidget {
   static final _token = RegExp(r'\{([^{}]*)\}');
   static final _arabic = RegExp(r'[؀-ۿ]');
 
+  static final _latinRun = RegExp(
+    r"""[A-Za-z](?:[A-Za-z0-9 _'’\-,.!?;:()"]|\{[^{}]*\})*""",
+  );
+
+  static String isolateLatin(String text) {
+    if (!_arabic.hasMatch(text)) return text;
+    return text.replaceAllMapped(_latinRun, (m) {
+      final run = m[0]!;
+      final body = run.trimRight();
+      return '\u2066$body\u2069${run.substring(body.length)}';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var base = style ?? DefaultTextStyle.of(context).style;
     if (color != null) base = base.copyWith(color: color);
-    final ltr = !_arabic.hasMatch(text);
+    final ltr = !_arabic.hasMatch(this.text);
+    final text = isolateLatin(this.text);
 
     final spans = <InlineSpan>[];
     var cursor = 0;

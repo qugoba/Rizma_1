@@ -18,8 +18,10 @@ import '../content/content_providers.dart';
 import '../content/lesson_content.dart';
 import '../content/question.dart';
 import '../content/speech_service.dart';
+import '../home/home_providers.dart';
 import '../profiles/active_profile_provider.dart';
 import 'learning_providers.dart';
+import 'learning_repository.dart';
 import 'lesson_view.dart';
 import 'round_engine.dart';
 import 'widgets/part_frame.dart';
@@ -110,6 +112,21 @@ class _RoundScreenState extends ConsumerState<RoundScreen> {
     }
   }
 
+  int _pendingStars(RoundState s) {
+    if (!_practice) return 0;
+    final id = ref.watch(activeProfileIdProvider).value;
+    if (id == null) return 0;
+    final activity = LearningRepository.activityId(
+      widget.lessonId,
+      widget.mode,
+    );
+    final already = (ref.watch(attemptsProvider(id)).value ?? const [])
+        .where((a) => a.activityId == activity)
+        .fold<int>(0, (sum, a) => sum + a.starsEarned);
+    final live = RoundEngine.liveStars(s);
+    return (live - already).clamp(0, live);
+  }
+
   void _advance() {
     final s = _state;
     if (s == null) return;
@@ -174,10 +191,32 @@ class _RoundScreenState extends ConsumerState<RoundScreen> {
     );
     if (leave == true && mounted) {
       ref.read(speechServiceProvider).stop();
+      await _savePartial();
+      if (!mounted) return;
       context.canPop()
           ? context.pop()
           : context.go(AppRoutes.lesson(widget.lessonId));
     }
+  }
+
+  Future<void> _savePartial() async {
+    var s = _state;
+    if (!_practice || s == null || _finishing) return;
+    if (s.phase != RoundPhase.answering) s = RoundEngine.advance(s);
+    if (s.results.isEmpty) return;
+    final profileId = ref.read(activeProfileIdProvider).value;
+    if (profileId == null) return;
+    _finishing = true;
+    await ref
+        .read(learningRepositoryProvider)
+        .recordRound(
+          profileId: profileId,
+          lessonId: widget.lessonId,
+          mode: widget.mode,
+          results: s.results,
+          content: null,
+          finished: false,
+        );
   }
 
   int? _readIndex;
@@ -227,7 +266,7 @@ class _RoundScreenState extends ConsumerState<RoundScreen> {
 
     final q = s.current!;
     _autoRead(s.index, q);
-    final stars = ref.watch(starsTotalProvider);
+    final stars = ref.watch(starsTotalProvider) + _pendingStars(s);
     final ctx = QuestionContext(
       question: q,
       layout: s.layout!,

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- النقل من هاتف لهاتف على Wi-Fi (ADR 003) يستعمل HTTP عاديًا داخل الشبكة
+     المحلية، وعناوينها تتغيّر (192.168.x.x)، فلا تُحصر بالاسم. الأمان من
+     توقيع الفهرس وبصمة كل ملف لا من الطريق، وكل اتصالنا بالإنترنت HTTPS.
+     وافق عليه صاحب المشروع (30 أكتوبر 2026). -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

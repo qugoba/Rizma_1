@@ -14,8 +14,17 @@ class Profiles extends Table {
 
   TextColumn get studentCode => text().unique()();
   TextColumn get classCode => text().nullable()();
+
+  TextColumn get equipped => text().withDefault(const Constant(''))();
+
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get lastActiveAt => dateTime()();
+
+  IntColumn get revision => integer().withDefault(const Constant(0))();
+
+  IntColumn get localVersion => integer().withDefault(const Constant(0))();
+
+  DateTimeColumn get syncedAt => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

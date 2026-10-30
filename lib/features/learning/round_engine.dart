@@ -32,6 +32,7 @@ class QuestionResult {
     required this.correct,
     required this.wrongs,
     required this.hints,
+    this.fingerprint = '',
   });
 
   factory QuestionResult.fromJson(Map<String, dynamic> json) => QuestionResult(
@@ -41,9 +42,12 @@ class QuestionResult {
     correct: json['correct'] as bool,
     wrongs: json['wrongs'] as int,
     hints: json['hints'] as int,
+    fingerprint: (json['hash'] as String?) ?? '',
   );
 
   final String questionId;
+
+  final String fingerprint;
   final String concept;
   final QuestionKind kind;
   final bool correct;
@@ -66,6 +70,7 @@ class QuestionResult {
 
   Map<String, dynamic> toJson() => {
     'id': questionId,
+    'hash': fingerprint,
     'concept': concept,
     'kind': kind.name,
     'correct': correct,
@@ -291,6 +296,7 @@ abstract final class RoundEngine {
     required int hints,
   }) => QuestionResult(
     questionId: q.id,
+    fingerprint: q.fingerprint,
     concept: q.concept,
     kind: q.kind,
     correct: correct,
@@ -320,4 +326,8 @@ abstract final class RoundEngine {
 
   static int starsEarned(List<QuestionResult> results) =>
       results.fold(0, (a, r) => a + r.stars);
+
+  static int liveStars(RoundState s) =>
+      starsEarned(s.results) +
+      (s.phase == RoundPhase.correct ? QuestionResult.starsFor(s.wrongs) : 0);
 }

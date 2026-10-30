@@ -533,30 +533,22 @@
       "units": [
         {
           "id": "english.u1",
-          "title": "My Family",
+          "title": "New friends",
           "order": 1,
           "lessons": [
             {
               "id": "english.u1.l1",
-              "title": "Greetings",
-              "estimatedMinutes": 10,
+              "title": "New friends",
+              "estimatedMinutes": 15,
               "order": 1,
               "concepts": [
                 {
                   "id": "english.u1.l1.c1",
-                  "title": "Greetings"
-                }
-              ]
-            },
-            {
-              "id": "english.u1.l2",
-              "title": "Family Members",
-              "estimatedMinutes": 12,
-              "order": 2,
-              "concepts": [
+                  "title": "New friends words"
+                },
                 {
-                  "id": "english.u1.l2.c1",
-                  "title": "Family Members"
+                  "id": "english.u1.l1.c2",
+                  "title": "Present simple: I live / He lives"
                 }
               ]
             }

@@ -33,9 +33,9 @@ class _DragDropViewState extends State<DragDropView> {
 
   Widget _cardFace(String text, {Color? color, bool lifted = false}) {
     return Container(
-      width: 64,
+      constraints: const BoxConstraints(minWidth: 64),
       height: 64,
-      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
@@ -48,9 +48,14 @@ class _DragDropViewState extends State<DragDropView> {
           ),
         ],
       ),
-      child: MathText(
-        text,
-        style: AppTextStyles.heading22.copyWith(color: color ?? AppColors.ink),
+      child: Center(
+        widthFactor: 1,
+        child: MathText(
+          text,
+          style: AppTextStyles.heading22.copyWith(
+            color: color ?? AppColors.ink,
+          ),
+        ),
       ),
     );
   }
@@ -83,17 +88,20 @@ class _DragDropViewState extends State<DragDropView> {
               dash: 6,
               gap: 4,
               child: Container(
-                width: 56,
+                constraints: const BoxConstraints(minWidth: 56),
                 height: 52,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 margin: const EdgeInsets.all(1),
                 decoration: BoxDecoration(
                   color: good ? AppColors.tealTint : AppColors.blueTint,
                   borderRadius: BorderRadius.circular(9),
                 ),
-                alignment: Alignment.center,
-                child: Text(
-                  text ?? '?',
-                  style: AppTextStyles.heading22.copyWith(color: color),
+                child: Center(
+                  widthFactor: 1,
+                  child: Text(
+                    text ?? '?',
+                    style: AppTextStyles.heading22.copyWith(color: color),
+                  ),
                 ),
               ),
             ),

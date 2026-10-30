@@ -33,7 +33,8 @@ abstract final class ArStrings {
   static const stageBasic = 'المرحلة الأساسية';
   static const stageSecondary = 'المرحلة الثانوية';
   static const step1InfoTitle = 'حزم دروس صفك جاهزة للتحميل';
-  static const step1InfoBody = 'ستعمل الدروس والاختبارات دون إنترنت بعد تحميلها.';
+  static const step1InfoBody =
+      'ستعمل الدروس والاختبارات دون إنترنت بعد تحميلها.';
   static const step1Next = 'التالي: تخصيص الملف';
   static const nameLabel = 'اسمك أو لقبك المفضّل';
   static const nameHint = 'اكتب اسمك';
@@ -101,6 +102,39 @@ abstract final class ArStrings {
       'الملفات محفوظة على هذا الجهاز · لا نطلب بريدًا ولا رقم هاتف';
   static const restoreNeedsInternet =
       'الاستعادة تحتاج اتصالًا بالإنترنت وستتوفّر قريبًا.';
+
+  static const restoreTitle = 'استعادة ملف طالب';
+  static const restoreHeading = 'أعِد تقدّمك إلى هذا الهاتف';
+  static const restoreIntro =
+      'اكتب رمز الطالب لتعود نتائجك ونجومك وملابس تميمتك.';
+  static const restoreCodeLabel = 'رمز الطالب';
+  static const restoreCheck = 'استعادة';
+  static const restoreWrongCode =
+      'لا يوجد طالب بهذا الرمز. تأكّد منه وحاول مرة أخرى.';
+  static String restoreCodeLocked(int minutes) =>
+      'محاولات كثيرة على هذا الرمز. حاول بعد ${minutesWord(minutes)}.';
+  static String restoreDeviceLocked(int minutes) =>
+      'محاولات كثيرة من هذا الهاتف. حاول بعد ${minutesWord(minutes)}.';
+  static const restoreOffline =
+      'لا يوجد اتصال بالإنترنت. الاستعادة تحتاج اتصالًا، جرّب عندما يتوفّر.';
+  static const restoreUnavailable =
+      'الاستعادة تحتاج خادم رِزمة، وهو غير متاح في هذه النسخة بعد.';
+  static const restorePendingDeletion =
+      'طُلب حذف هذا الملف نهائيًا. هل تريد إلغاء الحذف واستعادته؟';
+  static const restoreCancelDeletion = 'إلغاء الحذف واستعادة الملف';
+  static const restoreFoundTitle = 'وجدنا ملفك!';
+  static const restoreNameLabel = 'اكتب اسمك';
+  static const restoreNameNote =
+      'الاسم لا يُحفظ على الإنترنت، لذلك نطلبه من جديد. يمكنك وضع رقم سري من «حسابي».';
+  static const restoreFinish = 'ادخل إلى دروسك';
+  static const restoreFailed = 'تعذّرت الاستعادة. حاول مرة أخرى.';
+
+  static String minutesWord(int n) => switch (n) {
+    <= 1 => 'دقيقة واحدة',
+    2 => 'دقيقتين',
+    >= 3 && <= 10 => '$n دقائق',
+    _ => '$n دقيقة',
+  };
   static const profileProtected = 'محمي برمز سري';
 
   static String profileSemantics(String name, String grade, bool locked) =>
@@ -136,7 +170,7 @@ abstract final class ArStrings {
 
   static const forgotTitle = 'استعادة الوصول';
   static const forgotCodeLabel = 'أدخل رمز الطالب';
-  static const forgotCodeHint = 'RZ-XXXX';
+  static const forgotCodeHint = 'RZ-XXXX-XXXX';
   static const forgotCodeWrong = 'رمز الطالب غير صحيح.';
   static const forgotVerify = 'تحقّق';
   static const forgotChoose = 'تم التحقق. ماذا تريد أن تفعل؟';
@@ -217,6 +251,7 @@ abstract final class ArStrings {
   static const accountStorageGroup = 'التنزيل والتخزين';
   static const accountWifiOnly = 'التنزيل عبر Wi-Fi فقط';
   static const accountAutoVideo = 'تنزيل الفيديو تلقائيًا';
+  static const accountAutoUpdate = 'تحديث الدروس تلقائيًا';
   static const accountManageDownloads = 'إدارة التنزيلات';
   static const accountStorageNote = 'يعمل مع التنزيلات عند توفرها.';
 
@@ -249,6 +284,36 @@ abstract final class ArStrings {
   static const deleteFailed = 'تعذّر حذف الملف، حاول مرة أخرى.';
 
   static String deleteTitle(String name) => 'حذف ملف «$name»؟';
+
+  static String deleteChooseTitle(String name) =>
+      'ماذا تريد أن تفعل بملف «$name»؟';
+  static const deleteRemoveOption = 'إزالة من هذا الهاتف فقط';
+  static const deleteRemoveOptionNote =
+      'نتائجك تبقى محفوظة، وتستعيدها برمز الطالب على أي هاتف.';
+  static const deleteEverywhereOption = 'الحذف النهائي من كل مكان';
+  static const deleteEverywhereOptionNote =
+      'يُحذف من هذا الهاتف ومن الخادم. يمكن التراجع خلال 14 يومًا برمز الطالب.';
+  static const deleteSyncing = 'نحفظ نتائجك على الخادم أولًا…';
+  static String deleteSafe(String code) =>
+      'نتائجك محفوظة على الخادم. لتستعيدها لاحقًا احتفظ برمز الطالب: $code';
+  static String deleteUnsyncedWarning(int n) =>
+      'لا يوجد اتصال الآن، و${resultsCount(n)} لم تُرفع بعد وستضيع إن أزلت الملف.';
+  static const deleteRemoveConfirm = 'أزل من هذا الهاتف';
+  static const deleteRemoveAnyway = 'أزل رغم ذلك';
+  static const deleteEverywhereBody =
+      'اكتب رمز الطالب للتأكيد. سيختفي الملف فورًا، ويُمسح من الخادم بعد 14 يومًا، ويمكنك إلغاء الحذف برمزك خلال هذه المدة.';
+  static const deleteEverywhereConfirm = 'احذف من كل مكان';
+  static const deleteEverywhereOffline =
+      'لا يوجد اتصال بالإنترنت. الحذف من كل مكان يحتاج اتصالًا.';
+  static const deleteEverywhereFailed =
+      'تعذّر الحذف من الخادم الآن. حاول لاحقًا.';
+
+  static String resultsCount(int n) => switch (n) {
+    1 => 'نتيجة واحدة',
+    2 => 'نتيجتان',
+    >= 3 && <= 10 => '$n نتائج',
+    _ => '$n نتيجة',
+  };
 
   static const pinManageTitle = 'الرمز السري';
   static const pinChange = 'تغيير الرمز';

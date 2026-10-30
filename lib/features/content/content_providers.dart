@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../downloads/download_providers.dart';
 import 'content_repository.dart';
 import 'lesson_content.dart';
 
 final contentRepositoryProvider = Provider<ContentRepository>((ref) {
-  return ContentRepository();
+  return ContentRepository(installed: ref.watch(installedContentProvider));
 });
 
 final contentIndexProvider = FutureProvider<Set<String>>((ref) {

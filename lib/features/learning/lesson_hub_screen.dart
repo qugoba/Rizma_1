@@ -23,6 +23,7 @@ import '../content/lesson_content.dart';
 import '../profiles/active_profile_provider.dart';
 import 'learning_providers.dart';
 import 'widgets/learn_cards.dart';
+import 'widgets/lesson_files.dart';
 
 class LessonHubScreen extends ConsumerWidget {
   const LessonHubScreen({super.key, required this.lessonId});
@@ -127,6 +128,7 @@ class LessonHubScreen extends ConsumerWidget {
                           24,
                         ),
                         child: _Body(
+                          lessonId: lessonId,
                           content: c,
                           progress: index.progressOf(lessonId),
                           done: index.partsDone(lessonId),
@@ -144,12 +146,14 @@ class LessonHubScreen extends ConsumerWidget {
 
 class _Body extends StatelessWidget {
   const _Body({
+    required this.lessonId,
     required this.content,
     required this.progress,
     required this.done,
     required this.onOpen,
   });
 
+  final String lessonId;
   final LessonContent? content;
   final double progress;
   final Set<LessonPart> done;
@@ -168,7 +172,10 @@ class _Body extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = content;
     final shown = c == null ? const <LessonPart>[] : _shown(c);
-    final available = [for (final p in shown) if (c!.has(p)) p];
+    final available = [
+      for (final p in shown)
+        if (c!.has(p)) p,
+    ];
     final doneCount = available.where(done.contains).length;
     final next = available.where((p) => !done.contains(p)).firstOrNull;
 
@@ -195,6 +202,11 @@ class _Body extends StatelessWidget {
               next: part == next,
               onTap: c.has(part) ? () => onOpen(part) : null,
             ).fadeIn(i + 1),
+        if (c != null && c.attachments.isNotEmpty)
+          LessonFilesSection(
+            lessonId: lessonId,
+            attachments: c.attachments,
+          ).fadeIn(shown.length + 1),
       ],
     );
   }

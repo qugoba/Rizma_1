@@ -1,8 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- المزامنة مع الخادم (ADR 001). نسختا debug وprofile تضيفانها وحدهما،
+         أما نسخة الإصدار فتحتاجها هنا. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="Rizma"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:networkSecurityConfig="@xml/network_security_config">
         <activity
             android:name=".MainActivity"
             android:exported="true"

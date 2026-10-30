@@ -1,26 +1,22 @@
 import 'package:drift/drift.dart';
+import 'package:uuid/uuid.dart';
 
 import '../app_database.dart';
 import '../tables/attempts.dart';
 import '../tables/concept_mastery.dart';
 import '../tables/lesson_part_progress.dart';
 import '../tables/lesson_progress.dart';
-import '../tables/sync_queue.dart';
 
 part 'activity_dao.g.dart';
 
 @DriftAccessor(
-  tables: [
-    LessonProgress,
-    LessonPartProgress,
-    Attempts,
-    ConceptMastery,
-    SyncQueue,
-  ],
+  tables: [LessonProgress, LessonPartProgress, Attempts, ConceptMastery],
 )
 class ActivityDao extends DatabaseAccessor<AppDatabase>
     with _$ActivityDaoMixin {
   ActivityDao(super.db);
+
+  static const _uuid = Uuid();
 
   Stream<List<LessonProgressEntry>> watchLessonProgress(String profileId) {
     return (select(
@@ -81,7 +77,8 @@ class ActivityDao extends DatabaseAccessor<AppDatabase>
     )..where((a) => a.profileId.equals(profileId))).watch();
   }
 
-  Future<int> insertAttempt({
+  Future<String> insertAttempt({
+    String? id,
     required String profileId,
     required String activityId,
     required AttemptKind kind,
@@ -91,9 +88,11 @@ class ActivityDao extends DatabaseAccessor<AppDatabase>
     required DateTime now,
     int hintsUsed = 0,
     String? detailsJson,
-  }) {
-    return into(attempts).insert(
+  }) async {
+    final attemptId = id ?? _uuid.v4();
+    await into(attempts).insert(
       AttemptsCompanion.insert(
+        id: attemptId,
         profileId: profileId,
         activityId: activityId,
         kind: kind,
@@ -105,6 +104,17 @@ class ActivityDao extends DatabaseAccessor<AppDatabase>
         createdAt: now,
       ),
     );
+    return attemptId;
+  }
+
+  Future<List<Attempt>> getAttemptsInOrder(String profileId) {
+    return (select(attempts)
+          ..where((a) => a.profileId.equals(profileId))
+          ..orderBy([
+            (a) => OrderingTerm.asc(a.createdAt),
+            (a) => OrderingTerm.asc(a.id),
+          ]))
+        .get();
   }
 
   Future<int> starsForActivity(String profileId, String activityId) async {
@@ -130,7 +140,7 @@ class ActivityDao extends DatabaseAccessor<AppDatabase>
     return row.read(total) ?? 0;
   }
 
-  Future<Attempt?> getAttempt(String profileId, int id) {
+  Future<Attempt?> getAttempt(String profileId, String id) {
     return (select(attempts)
           ..where((a) => a.profileId.equals(profileId) & a.id.equals(id)))
         .getSingleOrNull();
@@ -191,23 +201,22 @@ class ActivityDao extends DatabaseAccessor<AppDatabase>
     )..where((r) => r.profileId.equals(profileId))).go();
   }
 
-  Future<void> enqueueSync({
-    required String entity,
-    required String payloadJson,
-    required DateTime now,
-  }) async {
-    await into(syncQueue).insert(
-      SyncQueueCompanion.insert(
-        entity: entity,
-        payloadJson: payloadJson,
-        createdAt: now,
-      ),
-    );
+  Future<void> clearDerived(String profileId) async {
+    await (delete(
+      lessonProgress,
+    )..where((r) => r.profileId.equals(profileId))).go();
+    await (delete(
+      conceptMastery,
+    )..where((r) => r.profileId.equals(profileId))).go();
   }
 
-  Stream<int> watchPendingSyncCount() {
-    final countExp = syncQueue.id.count();
-    return (selectOnly(syncQueue)..addColumns([countExp]))
+  Stream<int> watchUnsyncedAttempts(String profileId) {
+    final countExp = attempts.id.count();
+    return (selectOnly(attempts)
+          ..addColumns([countExp])
+          ..where(
+            attempts.profileId.equals(profileId) & attempts.syncedAt.isNull(),
+          ))
         .map((row) => row.read(countExp) ?? 0)
         .watchSingle();
   }

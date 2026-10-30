@@ -16,6 +16,7 @@ import 'package:rizma/features/content/speech_service.dart';
 import 'package:rizma/features/learning/round_engine.dart';
 import 'package:rizma/features/learning/widgets/interactive_views.dart';
 import 'package:rizma/features/learning/widgets/question_context.dart';
+import 'package:rizma/features/learning/widgets/round_panels.dart';
 import 'package:rizma/features/profiles/profile_repository.dart';
 
 import '../helpers/app_harness.dart';
@@ -431,6 +432,56 @@ void main() {
     );
 
     testWidgets(
+      'النجوم تُحسب فور الإجابة الصحيحة، وتبقى إن خرج الطالب قبل النهاية',
+      (tester) => scenario(
+        tester,
+        seed: seedProfile,
+        overrides: [
+          contentWith(
+            practice: [
+              choiceQ(id: 'p1'),
+              choiceQ(id: 'p2'),
+            ],
+          ),
+        ],
+        (db) async {
+          int shown() => tester.widget<StarsChip>(find.byType(StarsChip)).count;
+          await open(tester, '/lesson/$lesson');
+          await open(tester, '/learn/round/$lesson');
+          expect(shown(), 0);
+
+          await tapText(tester, '4');
+          expect(shown(), 3, reason: 'قبل «التالي» وقبل نهاية الجولة');
+          await tapText(tester, ArLearn.nextQuestion);
+          expect(shown(), 3);
+
+          await tester.tap(find.bySemanticsLabel(ArLearn.roundClose));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text(ArLearn.quitLeave));
+          await tester.pumpAndSettle();
+
+          final attempt = await lastAttempt(tester, db);
+          expect(attempt.starsEarned, 3);
+          expect(attempt.total, 1);
+          expect(attempt.detailsJson, contains('"partial":true'));
+          final parts = (await tester.runAsync(
+            () => db.activityDao.getLessonParts(attempt.profileId),
+          ))!;
+          expect(
+            parts.where((p) => p.part == LessonPart.practice),
+            isEmpty,
+            reason: 'تدريب لم يكتمل لا يُعدّ منجزًا',
+          );
+
+          await open(tester, '/learn/round/$lesson');
+          final before = shown();
+          await tapText(tester, '4');
+          expect(shown(), before);
+        },
+      ),
+    );
+
+    testWidgets(
       'درس بلا أسئلة يعرض رسالة بدل جولة فارغة',
       (tester) => scenario(
         tester,
@@ -464,9 +515,7 @@ void main() {
         for (final (i, q) in quiz.indexed) {
           final choices = (q['choices'] as List).cast<String>();
           final right = q['answer'] as int;
-          final pick = wrong.contains(i)
-              ? (right + 1) % choices.length
-              : right;
+          final pick = wrong.contains(i) ? (right + 1) % choices.length : right;
           await tapText(tester, choices[pick]);
           expect(find.text(ArLearn.revealedTitle), findsNothing);
           expect(find.text(ArLearn.hintTitle), findsNothing);

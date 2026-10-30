@@ -94,6 +94,18 @@ class $ProfilesTable extends Profiles with TableInfo<$ProfilesTable, Profile> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _equippedMeta = const VerificationMeta(
+    'equipped',
+  );
+  @override
+  late final GeneratedColumn<String> equipped = GeneratedColumn<String>(
+    'equipped',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -116,6 +128,41 @@ class $ProfilesTable extends Profiles with TableInfo<$ProfilesTable, Profile> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _revisionMeta = const VerificationMeta(
+    'revision',
+  );
+  @override
+  late final GeneratedColumn<int> revision = GeneratedColumn<int>(
+    'revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _localVersionMeta = const VerificationMeta(
+    'localVersion',
+  );
+  @override
+  late final GeneratedColumn<int> localVersion = GeneratedColumn<int>(
+    'local_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -126,8 +173,12 @@ class $ProfilesTable extends Profiles with TableInfo<$ProfilesTable, Profile> {
     pinSalt,
     studentCode,
     classCode,
+    equipped,
     createdAt,
     lastActiveAt,
+    revision,
+    localVersion,
+    syncedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -191,6 +242,12 @@ class $ProfilesTable extends Profiles with TableInfo<$ProfilesTable, Profile> {
         classCode.isAcceptableOrUnknown(data['class_code']!, _classCodeMeta),
       );
     }
+    if (data.containsKey('equipped')) {
+      context.handle(
+        _equippedMeta,
+        equipped.isAcceptableOrUnknown(data['equipped']!, _equippedMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -209,6 +266,27 @@ class $ProfilesTable extends Profiles with TableInfo<$ProfilesTable, Profile> {
       );
     } else if (isInserting) {
       context.missing(_lastActiveAtMeta);
+    }
+    if (data.containsKey('revision')) {
+      context.handle(
+        _revisionMeta,
+        revision.isAcceptableOrUnknown(data['revision']!, _revisionMeta),
+      );
+    }
+    if (data.containsKey('local_version')) {
+      context.handle(
+        _localVersionMeta,
+        localVersion.isAcceptableOrUnknown(
+          data['local_version']!,
+          _localVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('synced_at')) {
+      context.handle(
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
+      );
     }
     return context;
   }
@@ -253,6 +331,10 @@ class $ProfilesTable extends Profiles with TableInfo<$ProfilesTable, Profile> {
         DriftSqlType.string,
         data['${effectivePrefix}class_code'],
       ),
+      equipped: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}equipped'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -261,6 +343,18 @@ class $ProfilesTable extends Profiles with TableInfo<$ProfilesTable, Profile> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}last_active_at'],
       )!,
+      revision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}revision'],
+      )!,
+      localVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}local_version'],
+      )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
     );
   }
 
@@ -279,13 +373,25 @@ class Profile extends DataClass implements Insertable<Profile> {
   final int grade;
   final ProfileColor color;
 
-  /// SHA-256 للرمز السري مع salt عشوائي. null = لا رمز سري.
+  /// SHA-256 للرمز السري مع salt عشوائي. null = لا رمز سري. لا يُرفع.
   final String? pinHash;
   final String? pinSalt;
   final String studentCode;
   final String? classCode;
+
+  /// معرّفات قطع الخزانة المرتداة، مفصولة بفواصل (فارغ = لا شيء).
+  final String equipped;
   final DateTime createdAt;
   final DateTime lastActiveAt;
+
+  /// رقم النسخة على الخادم؛ يرفعه الخادم مع كل تعديل مقبول. 0 = لم يُرفع قط.
+  final int revision;
+
+  /// يزيد واحدًا مع كل تعديل محلي على ما يُرفع؛ يحسم سباق «عُدّل أثناء الرفع».
+  final int localVersion;
+
+  /// متى رُفعت آخر نسخة. null = فيه تعديل لم يُرفع بعد.
+  final DateTime? syncedAt;
   const Profile({
     required this.id,
     required this.name,
@@ -295,8 +401,12 @@ class Profile extends DataClass implements Insertable<Profile> {
     this.pinSalt,
     required this.studentCode,
     this.classCode,
+    required this.equipped,
     required this.createdAt,
     required this.lastActiveAt,
+    required this.revision,
+    required this.localVersion,
+    this.syncedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -319,8 +429,14 @@ class Profile extends DataClass implements Insertable<Profile> {
     if (!nullToAbsent || classCode != null) {
       map['class_code'] = Variable<String>(classCode);
     }
+    map['equipped'] = Variable<String>(equipped);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['last_active_at'] = Variable<DateTime>(lastActiveAt);
+    map['revision'] = Variable<int>(revision);
+    map['local_version'] = Variable<int>(localVersion);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
     return map;
   }
 
@@ -340,8 +456,14 @@ class Profile extends DataClass implements Insertable<Profile> {
       classCode: classCode == null && nullToAbsent
           ? const Value.absent()
           : Value(classCode),
+      equipped: Value(equipped),
       createdAt: Value(createdAt),
       lastActiveAt: Value(lastActiveAt),
+      revision: Value(revision),
+      localVersion: Value(localVersion),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
     );
   }
 
@@ -361,8 +483,12 @@ class Profile extends DataClass implements Insertable<Profile> {
       pinSalt: serializer.fromJson<String?>(json['pinSalt']),
       studentCode: serializer.fromJson<String>(json['studentCode']),
       classCode: serializer.fromJson<String?>(json['classCode']),
+      equipped: serializer.fromJson<String>(json['equipped']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       lastActiveAt: serializer.fromJson<DateTime>(json['lastActiveAt']),
+      revision: serializer.fromJson<int>(json['revision']),
+      localVersion: serializer.fromJson<int>(json['localVersion']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
     );
   }
   @override
@@ -379,8 +505,12 @@ class Profile extends DataClass implements Insertable<Profile> {
       'pinSalt': serializer.toJson<String?>(pinSalt),
       'studentCode': serializer.toJson<String>(studentCode),
       'classCode': serializer.toJson<String?>(classCode),
+      'equipped': serializer.toJson<String>(equipped),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'lastActiveAt': serializer.toJson<DateTime>(lastActiveAt),
+      'revision': serializer.toJson<int>(revision),
+      'localVersion': serializer.toJson<int>(localVersion),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
     };
   }
 
@@ -393,8 +523,12 @@ class Profile extends DataClass implements Insertable<Profile> {
     Value<String?> pinSalt = const Value.absent(),
     String? studentCode,
     Value<String?> classCode = const Value.absent(),
+    String? equipped,
     DateTime? createdAt,
     DateTime? lastActiveAt,
+    int? revision,
+    int? localVersion,
+    Value<DateTime?> syncedAt = const Value.absent(),
   }) => Profile(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -404,8 +538,12 @@ class Profile extends DataClass implements Insertable<Profile> {
     pinSalt: pinSalt.present ? pinSalt.value : this.pinSalt,
     studentCode: studentCode ?? this.studentCode,
     classCode: classCode.present ? classCode.value : this.classCode,
+    equipped: equipped ?? this.equipped,
     createdAt: createdAt ?? this.createdAt,
     lastActiveAt: lastActiveAt ?? this.lastActiveAt,
+    revision: revision ?? this.revision,
+    localVersion: localVersion ?? this.localVersion,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
   );
   Profile copyWithCompanion(ProfilesCompanion data) {
     return Profile(
@@ -419,10 +557,16 @@ class Profile extends DataClass implements Insertable<Profile> {
           ? data.studentCode.value
           : this.studentCode,
       classCode: data.classCode.present ? data.classCode.value : this.classCode,
+      equipped: data.equipped.present ? data.equipped.value : this.equipped,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       lastActiveAt: data.lastActiveAt.present
           ? data.lastActiveAt.value
           : this.lastActiveAt,
+      revision: data.revision.present ? data.revision.value : this.revision,
+      localVersion: data.localVersion.present
+          ? data.localVersion.value
+          : this.localVersion,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
     );
   }
 
@@ -437,8 +581,12 @@ class Profile extends DataClass implements Insertable<Profile> {
           ..write('pinSalt: $pinSalt, ')
           ..write('studentCode: $studentCode, ')
           ..write('classCode: $classCode, ')
+          ..write('equipped: $equipped, ')
           ..write('createdAt: $createdAt, ')
-          ..write('lastActiveAt: $lastActiveAt')
+          ..write('lastActiveAt: $lastActiveAt, ')
+          ..write('revision: $revision, ')
+          ..write('localVersion: $localVersion, ')
+          ..write('syncedAt: $syncedAt')
           ..write(')'))
         .toString();
   }
@@ -453,8 +601,12 @@ class Profile extends DataClass implements Insertable<Profile> {
     pinSalt,
     studentCode,
     classCode,
+    equipped,
     createdAt,
     lastActiveAt,
+    revision,
+    localVersion,
+    syncedAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -468,8 +620,12 @@ class Profile extends DataClass implements Insertable<Profile> {
           other.pinSalt == this.pinSalt &&
           other.studentCode == this.studentCode &&
           other.classCode == this.classCode &&
+          other.equipped == this.equipped &&
           other.createdAt == this.createdAt &&
-          other.lastActiveAt == this.lastActiveAt);
+          other.lastActiveAt == this.lastActiveAt &&
+          other.revision == this.revision &&
+          other.localVersion == this.localVersion &&
+          other.syncedAt == this.syncedAt);
 }
 
 class ProfilesCompanion extends UpdateCompanion<Profile> {
@@ -481,8 +637,12 @@ class ProfilesCompanion extends UpdateCompanion<Profile> {
   final Value<String?> pinSalt;
   final Value<String> studentCode;
   final Value<String?> classCode;
+  final Value<String> equipped;
   final Value<DateTime> createdAt;
   final Value<DateTime> lastActiveAt;
+  final Value<int> revision;
+  final Value<int> localVersion;
+  final Value<DateTime?> syncedAt;
   final Value<int> rowid;
   const ProfilesCompanion({
     this.id = const Value.absent(),
@@ -493,8 +653,12 @@ class ProfilesCompanion extends UpdateCompanion<Profile> {
     this.pinSalt = const Value.absent(),
     this.studentCode = const Value.absent(),
     this.classCode = const Value.absent(),
+    this.equipped = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.lastActiveAt = const Value.absent(),
+    this.revision = const Value.absent(),
+    this.localVersion = const Value.absent(),
+    this.syncedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ProfilesCompanion.insert({
@@ -506,8 +670,12 @@ class ProfilesCompanion extends UpdateCompanion<Profile> {
     this.pinSalt = const Value.absent(),
     required String studentCode,
     this.classCode = const Value.absent(),
+    this.equipped = const Value.absent(),
     required DateTime createdAt,
     required DateTime lastActiveAt,
+    this.revision = const Value.absent(),
+    this.localVersion = const Value.absent(),
+    this.syncedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -525,8 +693,12 @@ class ProfilesCompanion extends UpdateCompanion<Profile> {
     Expression<String>? pinSalt,
     Expression<String>? studentCode,
     Expression<String>? classCode,
+    Expression<String>? equipped,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? lastActiveAt,
+    Expression<int>? revision,
+    Expression<int>? localVersion,
+    Expression<DateTime>? syncedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -538,8 +710,12 @@ class ProfilesCompanion extends UpdateCompanion<Profile> {
       if (pinSalt != null) 'pin_salt': pinSalt,
       if (studentCode != null) 'student_code': studentCode,
       if (classCode != null) 'class_code': classCode,
+      if (equipped != null) 'equipped': equipped,
       if (createdAt != null) 'created_at': createdAt,
       if (lastActiveAt != null) 'last_active_at': lastActiveAt,
+      if (revision != null) 'revision': revision,
+      if (localVersion != null) 'local_version': localVersion,
+      if (syncedAt != null) 'synced_at': syncedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -553,8 +729,12 @@ class ProfilesCompanion extends UpdateCompanion<Profile> {
     Value<String?>? pinSalt,
     Value<String>? studentCode,
     Value<String?>? classCode,
+    Value<String>? equipped,
     Value<DateTime>? createdAt,
     Value<DateTime>? lastActiveAt,
+    Value<int>? revision,
+    Value<int>? localVersion,
+    Value<DateTime?>? syncedAt,
     Value<int>? rowid,
   }) {
     return ProfilesCompanion(
@@ -566,8 +746,12 @@ class ProfilesCompanion extends UpdateCompanion<Profile> {
       pinSalt: pinSalt ?? this.pinSalt,
       studentCode: studentCode ?? this.studentCode,
       classCode: classCode ?? this.classCode,
+      equipped: equipped ?? this.equipped,
       createdAt: createdAt ?? this.createdAt,
       lastActiveAt: lastActiveAt ?? this.lastActiveAt,
+      revision: revision ?? this.revision,
+      localVersion: localVersion ?? this.localVersion,
+      syncedAt: syncedAt ?? this.syncedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -601,11 +785,23 @@ class ProfilesCompanion extends UpdateCompanion<Profile> {
     if (classCode.present) {
       map['class_code'] = Variable<String>(classCode.value);
     }
+    if (equipped.present) {
+      map['equipped'] = Variable<String>(equipped.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
     if (lastActiveAt.present) {
       map['last_active_at'] = Variable<DateTime>(lastActiveAt.value);
+    }
+    if (revision.present) {
+      map['revision'] = Variable<int>(revision.value);
+    }
+    if (localVersion.present) {
+      map['local_version'] = Variable<int>(localVersion.value);
+    }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -624,8 +820,12 @@ class ProfilesCompanion extends UpdateCompanion<Profile> {
           ..write('pinSalt: $pinSalt, ')
           ..write('studentCode: $studentCode, ')
           ..write('classCode: $classCode, ')
+          ..write('equipped: $equipped, ')
           ..write('createdAt: $createdAt, ')
           ..write('lastActiveAt: $lastActiveAt, ')
+          ..write('revision: $revision, ')
+          ..write('localVersion: $localVersion, ')
+          ..write('syncedAt: $syncedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1058,12 +1258,24 @@ class $LessonPartProgressTable extends LessonPartProgress
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     profileId,
     lessonId,
     part,
     completedAt,
+    syncedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1104,6 +1316,12 @@ class $LessonPartProgressTable extends LessonPartProgress
     } else if (isInserting) {
       context.missing(_completedAtMeta);
     }
+    if (data.containsKey('synced_at')) {
+      context.handle(
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -1131,6 +1349,10 @@ class $LessonPartProgressTable extends LessonPartProgress
         DriftSqlType.dateTime,
         data['${effectivePrefix}completed_at'],
       )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
     );
   }
 
@@ -1148,11 +1370,15 @@ class LessonPartEntry extends DataClass implements Insertable<LessonPartEntry> {
   final String lessonId;
   final LessonPart part;
   final DateTime completedAt;
+
+  /// متى رُفع إلى الخادم. null = لم يُرفع بعد. حدث لا يتغيّر بعد حفظه.
+  final DateTime? syncedAt;
   const LessonPartEntry({
     required this.profileId,
     required this.lessonId,
     required this.part,
     required this.completedAt,
+    this.syncedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1165,6 +1391,9 @@ class LessonPartEntry extends DataClass implements Insertable<LessonPartEntry> {
       );
     }
     map['completed_at'] = Variable<DateTime>(completedAt);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
     return map;
   }
 
@@ -1174,6 +1403,9 @@ class LessonPartEntry extends DataClass implements Insertable<LessonPartEntry> {
       lessonId: Value(lessonId),
       part: Value(part),
       completedAt: Value(completedAt),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
     );
   }
 
@@ -1189,6 +1421,7 @@ class LessonPartEntry extends DataClass implements Insertable<LessonPartEntry> {
         serializer.fromJson<String>(json['part']),
       ),
       completedAt: serializer.fromJson<DateTime>(json['completedAt']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
     );
   }
   @override
@@ -1201,6 +1434,7 @@ class LessonPartEntry extends DataClass implements Insertable<LessonPartEntry> {
         $LessonPartProgressTable.$converterpart.toJson(part),
       ),
       'completedAt': serializer.toJson<DateTime>(completedAt),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
     };
   }
 
@@ -1209,11 +1443,13 @@ class LessonPartEntry extends DataClass implements Insertable<LessonPartEntry> {
     String? lessonId,
     LessonPart? part,
     DateTime? completedAt,
+    Value<DateTime?> syncedAt = const Value.absent(),
   }) => LessonPartEntry(
     profileId: profileId ?? this.profileId,
     lessonId: lessonId ?? this.lessonId,
     part: part ?? this.part,
     completedAt: completedAt ?? this.completedAt,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
   );
   LessonPartEntry copyWithCompanion(LessonPartProgressCompanion data) {
     return LessonPartEntry(
@@ -1223,6 +1459,7 @@ class LessonPartEntry extends DataClass implements Insertable<LessonPartEntry> {
       completedAt: data.completedAt.present
           ? data.completedAt.value
           : this.completedAt,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
     );
   }
 
@@ -1232,13 +1469,15 @@ class LessonPartEntry extends DataClass implements Insertable<LessonPartEntry> {
           ..write('profileId: $profileId, ')
           ..write('lessonId: $lessonId, ')
           ..write('part: $part, ')
-          ..write('completedAt: $completedAt')
+          ..write('completedAt: $completedAt, ')
+          ..write('syncedAt: $syncedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(profileId, lessonId, part, completedAt);
+  int get hashCode =>
+      Object.hash(profileId, lessonId, part, completedAt, syncedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1246,7 +1485,8 @@ class LessonPartEntry extends DataClass implements Insertable<LessonPartEntry> {
           other.profileId == this.profileId &&
           other.lessonId == this.lessonId &&
           other.part == this.part &&
-          other.completedAt == this.completedAt);
+          other.completedAt == this.completedAt &&
+          other.syncedAt == this.syncedAt);
 }
 
 class LessonPartProgressCompanion extends UpdateCompanion<LessonPartEntry> {
@@ -1254,12 +1494,14 @@ class LessonPartProgressCompanion extends UpdateCompanion<LessonPartEntry> {
   final Value<String> lessonId;
   final Value<LessonPart> part;
   final Value<DateTime> completedAt;
+  final Value<DateTime?> syncedAt;
   final Value<int> rowid;
   const LessonPartProgressCompanion({
     this.profileId = const Value.absent(),
     this.lessonId = const Value.absent(),
     this.part = const Value.absent(),
     this.completedAt = const Value.absent(),
+    this.syncedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LessonPartProgressCompanion.insert({
@@ -1267,6 +1509,7 @@ class LessonPartProgressCompanion extends UpdateCompanion<LessonPartEntry> {
     required String lessonId,
     required LessonPart part,
     required DateTime completedAt,
+    this.syncedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : profileId = Value(profileId),
        lessonId = Value(lessonId),
@@ -1277,6 +1520,7 @@ class LessonPartProgressCompanion extends UpdateCompanion<LessonPartEntry> {
     Expression<String>? lessonId,
     Expression<String>? part,
     Expression<DateTime>? completedAt,
+    Expression<DateTime>? syncedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1284,6 +1528,7 @@ class LessonPartProgressCompanion extends UpdateCompanion<LessonPartEntry> {
       if (lessonId != null) 'lesson_id': lessonId,
       if (part != null) 'part': part,
       if (completedAt != null) 'completed_at': completedAt,
+      if (syncedAt != null) 'synced_at': syncedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1293,6 +1538,7 @@ class LessonPartProgressCompanion extends UpdateCompanion<LessonPartEntry> {
     Value<String>? lessonId,
     Value<LessonPart>? part,
     Value<DateTime>? completedAt,
+    Value<DateTime?>? syncedAt,
     Value<int>? rowid,
   }) {
     return LessonPartProgressCompanion(
@@ -1300,6 +1546,7 @@ class LessonPartProgressCompanion extends UpdateCompanion<LessonPartEntry> {
       lessonId: lessonId ?? this.lessonId,
       part: part ?? this.part,
       completedAt: completedAt ?? this.completedAt,
+      syncedAt: syncedAt ?? this.syncedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1321,6 +1568,9 @@ class LessonPartProgressCompanion extends UpdateCompanion<LessonPartEntry> {
     if (completedAt.present) {
       map['completed_at'] = Variable<DateTime>(completedAt.value);
     }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1334,6 +1584,7 @@ class LessonPartProgressCompanion extends UpdateCompanion<LessonPartEntry> {
           ..write('lessonId: $lessonId, ')
           ..write('part: $part, ')
           ..write('completedAt: $completedAt, ')
+          ..write('syncedAt: $syncedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1389,8 +1640,25 @@ class $OwnedItemsTable extends OwnedItems
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
   @override
-  List<GeneratedColumn> get $columns => [profileId, itemId, cost, acquiredAt];
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    profileId,
+    itemId,
+    cost,
+    acquiredAt,
+    syncedAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1435,6 +1703,12 @@ class $OwnedItemsTable extends OwnedItems
     } else if (isInserting) {
       context.missing(_acquiredAtMeta);
     }
+    if (data.containsKey('synced_at')) {
+      context.handle(
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -1460,6 +1734,10 @@ class $OwnedItemsTable extends OwnedItems
         DriftSqlType.dateTime,
         data['${effectivePrefix}acquired_at'],
       )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
     );
   }
 
@@ -1474,11 +1752,15 @@ class OwnedItem extends DataClass implements Insertable<OwnedItem> {
   final String itemId;
   final int cost;
   final DateTime acquiredAt;
+
+  /// متى رُفع إلى الخادم. null = لم يُرفع بعد. حدث لا يتغيّر بعد حفظه.
+  final DateTime? syncedAt;
   const OwnedItem({
     required this.profileId,
     required this.itemId,
     required this.cost,
     required this.acquiredAt,
+    this.syncedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1487,6 +1769,9 @@ class OwnedItem extends DataClass implements Insertable<OwnedItem> {
     map['item_id'] = Variable<String>(itemId);
     map['cost'] = Variable<int>(cost);
     map['acquired_at'] = Variable<DateTime>(acquiredAt);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
     return map;
   }
 
@@ -1496,6 +1781,9 @@ class OwnedItem extends DataClass implements Insertable<OwnedItem> {
       itemId: Value(itemId),
       cost: Value(cost),
       acquiredAt: Value(acquiredAt),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
     );
   }
 
@@ -1509,6 +1797,7 @@ class OwnedItem extends DataClass implements Insertable<OwnedItem> {
       itemId: serializer.fromJson<String>(json['itemId']),
       cost: serializer.fromJson<int>(json['cost']),
       acquiredAt: serializer.fromJson<DateTime>(json['acquiredAt']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
     );
   }
   @override
@@ -1519,6 +1808,7 @@ class OwnedItem extends DataClass implements Insertable<OwnedItem> {
       'itemId': serializer.toJson<String>(itemId),
       'cost': serializer.toJson<int>(cost),
       'acquiredAt': serializer.toJson<DateTime>(acquiredAt),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
     };
   }
 
@@ -1527,11 +1817,13 @@ class OwnedItem extends DataClass implements Insertable<OwnedItem> {
     String? itemId,
     int? cost,
     DateTime? acquiredAt,
+    Value<DateTime?> syncedAt = const Value.absent(),
   }) => OwnedItem(
     profileId: profileId ?? this.profileId,
     itemId: itemId ?? this.itemId,
     cost: cost ?? this.cost,
     acquiredAt: acquiredAt ?? this.acquiredAt,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
   );
   OwnedItem copyWithCompanion(OwnedItemsCompanion data) {
     return OwnedItem(
@@ -1541,6 +1833,7 @@ class OwnedItem extends DataClass implements Insertable<OwnedItem> {
       acquiredAt: data.acquiredAt.present
           ? data.acquiredAt.value
           : this.acquiredAt,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
     );
   }
 
@@ -1550,13 +1843,15 @@ class OwnedItem extends DataClass implements Insertable<OwnedItem> {
           ..write('profileId: $profileId, ')
           ..write('itemId: $itemId, ')
           ..write('cost: $cost, ')
-          ..write('acquiredAt: $acquiredAt')
+          ..write('acquiredAt: $acquiredAt, ')
+          ..write('syncedAt: $syncedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(profileId, itemId, cost, acquiredAt);
+  int get hashCode =>
+      Object.hash(profileId, itemId, cost, acquiredAt, syncedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1564,7 +1859,8 @@ class OwnedItem extends DataClass implements Insertable<OwnedItem> {
           other.profileId == this.profileId &&
           other.itemId == this.itemId &&
           other.cost == this.cost &&
-          other.acquiredAt == this.acquiredAt);
+          other.acquiredAt == this.acquiredAt &&
+          other.syncedAt == this.syncedAt);
 }
 
 class OwnedItemsCompanion extends UpdateCompanion<OwnedItem> {
@@ -1572,12 +1868,14 @@ class OwnedItemsCompanion extends UpdateCompanion<OwnedItem> {
   final Value<String> itemId;
   final Value<int> cost;
   final Value<DateTime> acquiredAt;
+  final Value<DateTime?> syncedAt;
   final Value<int> rowid;
   const OwnedItemsCompanion({
     this.profileId = const Value.absent(),
     this.itemId = const Value.absent(),
     this.cost = const Value.absent(),
     this.acquiredAt = const Value.absent(),
+    this.syncedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   OwnedItemsCompanion.insert({
@@ -1585,6 +1883,7 @@ class OwnedItemsCompanion extends UpdateCompanion<OwnedItem> {
     required String itemId,
     required int cost,
     required DateTime acquiredAt,
+    this.syncedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : profileId = Value(profileId),
        itemId = Value(itemId),
@@ -1595,6 +1894,7 @@ class OwnedItemsCompanion extends UpdateCompanion<OwnedItem> {
     Expression<String>? itemId,
     Expression<int>? cost,
     Expression<DateTime>? acquiredAt,
+    Expression<DateTime>? syncedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1602,6 +1902,7 @@ class OwnedItemsCompanion extends UpdateCompanion<OwnedItem> {
       if (itemId != null) 'item_id': itemId,
       if (cost != null) 'cost': cost,
       if (acquiredAt != null) 'acquired_at': acquiredAt,
+      if (syncedAt != null) 'synced_at': syncedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1611,6 +1912,7 @@ class OwnedItemsCompanion extends UpdateCompanion<OwnedItem> {
     Value<String>? itemId,
     Value<int>? cost,
     Value<DateTime>? acquiredAt,
+    Value<DateTime?>? syncedAt,
     Value<int>? rowid,
   }) {
     return OwnedItemsCompanion(
@@ -1618,6 +1920,7 @@ class OwnedItemsCompanion extends UpdateCompanion<OwnedItem> {
       itemId: itemId ?? this.itemId,
       cost: cost ?? this.cost,
       acquiredAt: acquiredAt ?? this.acquiredAt,
+      syncedAt: syncedAt ?? this.syncedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1637,6 +1940,9 @@ class OwnedItemsCompanion extends UpdateCompanion<OwnedItem> {
     if (acquiredAt.present) {
       map['acquired_at'] = Variable<DateTime>(acquiredAt.value);
     }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1650,6 +1956,7 @@ class OwnedItemsCompanion extends UpdateCompanion<OwnedItem> {
           ..write('itemId: $itemId, ')
           ..write('cost: $cost, ')
           ..write('acquiredAt: $acquiredAt, ')
+          ..write('syncedAt: $syncedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1663,16 +1970,12 @@ class $AttemptsTable extends Attempts with TableInfo<$AttemptsTable, Attempt> {
   $AttemptsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
     'id',
     aliasedName,
     false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _profileIdMeta = const VerificationMeta(
     'profileId',
@@ -1772,6 +2075,29 @@ class $AttemptsTable extends Attempts with TableInfo<$AttemptsTable, Attempt> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverReceivedAtMeta = const VerificationMeta(
+    'serverReceivedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> serverReceivedAt =
+      GeneratedColumn<DateTime>(
+        'server_received_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1784,6 +2110,8 @@ class $AttemptsTable extends Attempts with TableInfo<$AttemptsTable, Attempt> {
     hintsUsed,
     detailsJson,
     createdAt,
+    syncedAt,
+    serverReceivedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1799,6 +2127,8 @@ class $AttemptsTable extends Attempts with TableInfo<$AttemptsTable, Attempt> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
     }
     if (data.containsKey('profile_id')) {
       context.handle(
@@ -1864,6 +2194,21 @@ class $AttemptsTable extends Attempts with TableInfo<$AttemptsTable, Attempt> {
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
+    if (data.containsKey('synced_at')) {
+      context.handle(
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
+      );
+    }
+    if (data.containsKey('server_received_at')) {
+      context.handle(
+        _serverReceivedAtMeta,
+        serverReceivedAt.isAcceptableOrUnknown(
+          data['server_received_at']!,
+          _serverReceivedAtMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1874,7 +2219,7 @@ class $AttemptsTable extends Attempts with TableInfo<$AttemptsTable, Attempt> {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Attempt(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        DriftSqlType.string,
         data['${effectivePrefix}id'],
       )!,
       profileId: attachedDatabase.typeMapping.read(
@@ -1915,6 +2260,14 @@ class $AttemptsTable extends Attempts with TableInfo<$AttemptsTable, Attempt> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
+      serverReceivedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}server_received_at'],
+      ),
     );
   }
 
@@ -1928,7 +2281,8 @@ class $AttemptsTable extends Attempts with TableInfo<$AttemptsTable, Attempt> {
 }
 
 class Attempt extends DataClass implements Insertable<Attempt> {
-  final int id;
+  /// UUID يُنشأ على الهاتف (لا رقم تسلسلي: هاتفان قد يعطيان الرقم نفسه).
+  final String id;
   final String profileId;
   final String activityId;
   final AttemptKind kind;
@@ -1939,10 +2293,18 @@ class Attempt extends DataClass implements Insertable<Attempt> {
   /// عدد التلميحات المستعملة في الجولة.
   final int hintsUsed;
 
-  /// نتيجة كل سؤال (JSON): معرّف السؤال ونوعه ومفهومه وصحّته. منها تُبنى شاشات
-  /// النتيجة وخطة المراجعة. null للمحاولات القديمة.
+  /// نتيجة كل سؤال (JSON): معرّفه وبصمة محتواه ونوعه ومفهومه وصحّته وتلميحاته.
+  /// منها تُبنى شاشات النتيجة وخطة المراجعة، ويُعاد حساب الإتقان. null للألعاب.
   final String? detailsJson;
+
+  /// وقت الهاتف عند انتهاء الجولة.
   final DateTime createdAt;
+
+  /// متى رُفعت إلى الخادم. null = لم تُرفع بعد.
+  final DateTime? syncedAt;
+
+  /// وقت استلام الخادم لها (من ساعته هو)، يصل مع السحب. null قبل ذلك.
+  final DateTime? serverReceivedAt;
   const Attempt({
     required this.id,
     required this.profileId,
@@ -1954,11 +2316,13 @@ class Attempt extends DataClass implements Insertable<Attempt> {
     required this.hintsUsed,
     this.detailsJson,
     required this.createdAt,
+    this.syncedAt,
+    this.serverReceivedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
+    map['id'] = Variable<String>(id);
     map['profile_id'] = Variable<String>(profileId);
     map['activity_id'] = Variable<String>(activityId);
     {
@@ -1972,6 +2336,12 @@ class Attempt extends DataClass implements Insertable<Attempt> {
       map['details_json'] = Variable<String>(detailsJson);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
+    if (!nullToAbsent || serverReceivedAt != null) {
+      map['server_received_at'] = Variable<DateTime>(serverReceivedAt);
+    }
     return map;
   }
 
@@ -1989,6 +2359,12 @@ class Attempt extends DataClass implements Insertable<Attempt> {
           ? const Value.absent()
           : Value(detailsJson),
       createdAt: Value(createdAt),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
+      serverReceivedAt: serverReceivedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverReceivedAt),
     );
   }
 
@@ -1998,7 +2374,7 @@ class Attempt extends DataClass implements Insertable<Attempt> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Attempt(
-      id: serializer.fromJson<int>(json['id']),
+      id: serializer.fromJson<String>(json['id']),
       profileId: serializer.fromJson<String>(json['profileId']),
       activityId: serializer.fromJson<String>(json['activityId']),
       kind: $AttemptsTable.$converterkind.fromJson(
@@ -2010,13 +2386,17 @@ class Attempt extends DataClass implements Insertable<Attempt> {
       hintsUsed: serializer.fromJson<int>(json['hintsUsed']),
       detailsJson: serializer.fromJson<String?>(json['detailsJson']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
+      serverReceivedAt: serializer.fromJson<DateTime?>(
+        json['serverReceivedAt'],
+      ),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
+      'id': serializer.toJson<String>(id),
       'profileId': serializer.toJson<String>(profileId),
       'activityId': serializer.toJson<String>(activityId),
       'kind': serializer.toJson<String>(
@@ -2028,11 +2408,13 @@ class Attempt extends DataClass implements Insertable<Attempt> {
       'hintsUsed': serializer.toJson<int>(hintsUsed),
       'detailsJson': serializer.toJson<String?>(detailsJson),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
+      'serverReceivedAt': serializer.toJson<DateTime?>(serverReceivedAt),
     };
   }
 
   Attempt copyWith({
-    int? id,
+    String? id,
     String? profileId,
     String? activityId,
     AttemptKind? kind,
@@ -2042,6 +2424,8 @@ class Attempt extends DataClass implements Insertable<Attempt> {
     int? hintsUsed,
     Value<String?> detailsJson = const Value.absent(),
     DateTime? createdAt,
+    Value<DateTime?> syncedAt = const Value.absent(),
+    Value<DateTime?> serverReceivedAt = const Value.absent(),
   }) => Attempt(
     id: id ?? this.id,
     profileId: profileId ?? this.profileId,
@@ -2053,6 +2437,10 @@ class Attempt extends DataClass implements Insertable<Attempt> {
     hintsUsed: hintsUsed ?? this.hintsUsed,
     detailsJson: detailsJson.present ? detailsJson.value : this.detailsJson,
     createdAt: createdAt ?? this.createdAt,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
+    serverReceivedAt: serverReceivedAt.present
+        ? serverReceivedAt.value
+        : this.serverReceivedAt,
   );
   Attempt copyWithCompanion(AttemptsCompanion data) {
     return Attempt(
@@ -2072,6 +2460,10 @@ class Attempt extends DataClass implements Insertable<Attempt> {
           ? data.detailsJson.value
           : this.detailsJson,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
+      serverReceivedAt: data.serverReceivedAt.present
+          ? data.serverReceivedAt.value
+          : this.serverReceivedAt,
     );
   }
 
@@ -2087,7 +2479,9 @@ class Attempt extends DataClass implements Insertable<Attempt> {
           ..write('starsEarned: $starsEarned, ')
           ..write('hintsUsed: $hintsUsed, ')
           ..write('detailsJson: $detailsJson, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('serverReceivedAt: $serverReceivedAt')
           ..write(')'))
         .toString();
   }
@@ -2104,6 +2498,8 @@ class Attempt extends DataClass implements Insertable<Attempt> {
     hintsUsed,
     detailsJson,
     createdAt,
+    syncedAt,
+    serverReceivedAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -2118,11 +2514,13 @@ class Attempt extends DataClass implements Insertable<Attempt> {
           other.starsEarned == this.starsEarned &&
           other.hintsUsed == this.hintsUsed &&
           other.detailsJson == this.detailsJson &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.syncedAt == this.syncedAt &&
+          other.serverReceivedAt == this.serverReceivedAt);
 }
 
 class AttemptsCompanion extends UpdateCompanion<Attempt> {
-  final Value<int> id;
+  final Value<String> id;
   final Value<String> profileId;
   final Value<String> activityId;
   final Value<AttemptKind> kind;
@@ -2132,6 +2530,9 @@ class AttemptsCompanion extends UpdateCompanion<Attempt> {
   final Value<int> hintsUsed;
   final Value<String?> detailsJson;
   final Value<DateTime> createdAt;
+  final Value<DateTime?> syncedAt;
+  final Value<DateTime?> serverReceivedAt;
+  final Value<int> rowid;
   const AttemptsCompanion({
     this.id = const Value.absent(),
     this.profileId = const Value.absent(),
@@ -2143,9 +2544,12 @@ class AttemptsCompanion extends UpdateCompanion<Attempt> {
     this.hintsUsed = const Value.absent(),
     this.detailsJson = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.serverReceivedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   AttemptsCompanion.insert({
-    this.id = const Value.absent(),
+    required String id,
     required String profileId,
     required String activityId,
     required AttemptKind kind,
@@ -2155,14 +2559,18 @@ class AttemptsCompanion extends UpdateCompanion<Attempt> {
     this.hintsUsed = const Value.absent(),
     this.detailsJson = const Value.absent(),
     required DateTime createdAt,
-  }) : profileId = Value(profileId),
+    this.syncedAt = const Value.absent(),
+    this.serverReceivedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       profileId = Value(profileId),
        activityId = Value(activityId),
        kind = Value(kind),
        score = Value(score),
        total = Value(total),
        createdAt = Value(createdAt);
   static Insertable<Attempt> custom({
-    Expression<int>? id,
+    Expression<String>? id,
     Expression<String>? profileId,
     Expression<String>? activityId,
     Expression<String>? kind,
@@ -2172,6 +2580,9 @@ class AttemptsCompanion extends UpdateCompanion<Attempt> {
     Expression<int>? hintsUsed,
     Expression<String>? detailsJson,
     Expression<DateTime>? createdAt,
+    Expression<DateTime>? syncedAt,
+    Expression<DateTime>? serverReceivedAt,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2184,11 +2595,14 @@ class AttemptsCompanion extends UpdateCompanion<Attempt> {
       if (hintsUsed != null) 'hints_used': hintsUsed,
       if (detailsJson != null) 'details_json': detailsJson,
       if (createdAt != null) 'created_at': createdAt,
+      if (syncedAt != null) 'synced_at': syncedAt,
+      if (serverReceivedAt != null) 'server_received_at': serverReceivedAt,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   AttemptsCompanion copyWith({
-    Value<int>? id,
+    Value<String>? id,
     Value<String>? profileId,
     Value<String>? activityId,
     Value<AttemptKind>? kind,
@@ -2198,6 +2612,9 @@ class AttemptsCompanion extends UpdateCompanion<Attempt> {
     Value<int>? hintsUsed,
     Value<String?>? detailsJson,
     Value<DateTime>? createdAt,
+    Value<DateTime?>? syncedAt,
+    Value<DateTime?>? serverReceivedAt,
+    Value<int>? rowid,
   }) {
     return AttemptsCompanion(
       id: id ?? this.id,
@@ -2210,6 +2627,9 @@ class AttemptsCompanion extends UpdateCompanion<Attempt> {
       hintsUsed: hintsUsed ?? this.hintsUsed,
       detailsJson: detailsJson ?? this.detailsJson,
       createdAt: createdAt ?? this.createdAt,
+      syncedAt: syncedAt ?? this.syncedAt,
+      serverReceivedAt: serverReceivedAt ?? this.serverReceivedAt,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -2217,7 +2637,7 @@ class AttemptsCompanion extends UpdateCompanion<Attempt> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = Variable<String>(id.value);
     }
     if (profileId.present) {
       map['profile_id'] = Variable<String>(profileId.value);
@@ -2248,6 +2668,15 @@ class AttemptsCompanion extends UpdateCompanion<Attempt> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
+    if (serverReceivedAt.present) {
+      map['server_received_at'] = Variable<DateTime>(serverReceivedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -2263,7 +2692,10 @@ class AttemptsCompanion extends UpdateCompanion<Attempt> {
           ..write('starsEarned: $starsEarned, ')
           ..write('hintsUsed: $hintsUsed, ')
           ..write('detailsJson: $detailsJson, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('serverReceivedAt: $serverReceivedAt, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -2593,352 +3025,438 @@ class ConceptMasteryCompanion extends UpdateCompanion<ConceptMasteryEntry> {
   }
 }
 
-class $SyncQueueTable extends SyncQueue
-    with TableInfo<$SyncQueueTable, SyncQueueEntry> {
+class $BookmarksTable extends Bookmarks
+    with TableInfo<$BookmarksTable, Bookmark> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $SyncQueueTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  $BookmarksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _profileIdMeta = const VerificationMeta(
+    'profileId',
+  );
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
+  late final GeneratedColumn<String> profileId = GeneratedColumn<String>(
+    'profile_id',
     aliasedName,
     false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
+      'REFERENCES profiles (id) ON DELETE CASCADE',
     ),
   );
-  static const VerificationMeta _entityMeta = const VerificationMeta('entity');
+  static const VerificationMeta _lessonIdMeta = const VerificationMeta(
+    'lessonId',
+  );
   @override
-  late final GeneratedColumn<String> entity = GeneratedColumn<String>(
-    'entity',
+  late final GeneratedColumn<String> lessonId = GeneratedColumn<String>(
+    'lesson_id',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _payloadJsonMeta = const VerificationMeta(
-    'payloadJson',
+  static const VerificationMeta _removedAtMeta = const VerificationMeta(
+    'removedAt',
   );
   @override
-  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
-    'payload_json',
+  late final GeneratedColumn<DateTime> removedAt = GeneratedColumn<DateTime>(
+    'removed_at',
     aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
   );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
   );
   @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
     aliasedName,
     false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _triesMeta = const VerificationMeta('tries');
+  static const VerificationMeta _localVersionMeta = const VerificationMeta(
+    'localVersion',
+  );
   @override
-  late final GeneratedColumn<int> tries = GeneratedColumn<int>(
-    'tries',
+  late final GeneratedColumn<int> localVersion = GeneratedColumn<int>(
+    'local_version',
     aliasedName,
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
-    id,
-    entity,
-    payloadJson,
-    createdAt,
-    tries,
+    profileId,
+    lessonId,
+    removedAt,
+    updatedAt,
+    localVersion,
+    syncedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'sync_queue';
+  static const String $name = 'bookmarks';
   @override
   VerificationContext validateIntegrity(
-    Insertable<SyncQueueEntry> instance, {
+    Insertable<Bookmark> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('entity')) {
+    if (data.containsKey('profile_id')) {
       context.handle(
-        _entityMeta,
-        entity.isAcceptableOrUnknown(data['entity']!, _entityMeta),
+        _profileIdMeta,
+        profileId.isAcceptableOrUnknown(data['profile_id']!, _profileIdMeta),
       );
     } else if (isInserting) {
-      context.missing(_entityMeta);
+      context.missing(_profileIdMeta);
     }
-    if (data.containsKey('payload_json')) {
+    if (data.containsKey('lesson_id')) {
       context.handle(
-        _payloadJsonMeta,
-        payloadJson.isAcceptableOrUnknown(
-          data['payload_json']!,
-          _payloadJsonMeta,
+        _lessonIdMeta,
+        lessonId.isAcceptableOrUnknown(data['lesson_id']!, _lessonIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lessonIdMeta);
+    }
+    if (data.containsKey('removed_at')) {
+      context.handle(
+        _removedAtMeta,
+        removedAt.isAcceptableOrUnknown(data['removed_at']!, _removedAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('local_version')) {
+      context.handle(
+        _localVersionMeta,
+        localVersion.isAcceptableOrUnknown(
+          data['local_version']!,
+          _localVersionMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_payloadJsonMeta);
     }
-    if (data.containsKey('created_at')) {
+    if (data.containsKey('synced_at')) {
       context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
-    }
-    if (data.containsKey('tries')) {
-      context.handle(
-        _triesMeta,
-        tries.isAcceptableOrUnknown(data['tries']!, _triesMeta),
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
       );
     }
     return context;
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<GeneratedColumn> get $primaryKey => {profileId, lessonId};
   @override
-  SyncQueueEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Bookmark map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return SyncQueueEntry(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      entity: attachedDatabase.typeMapping.read(
+    return Bookmark(
+      profileId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}entity'],
+        data['${effectivePrefix}profile_id'],
       )!,
-      payloadJson: attachedDatabase.typeMapping.read(
+      lessonId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}payload_json'],
+        data['${effectivePrefix}lesson_id'],
       )!,
-      createdAt: attachedDatabase.typeMapping.read(
+      removedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
+        data['${effectivePrefix}removed_at'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
       )!,
-      tries: attachedDatabase.typeMapping.read(
+      localVersion: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}tries'],
+        data['${effectivePrefix}local_version'],
       )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
     );
   }
 
   @override
-  $SyncQueueTable createAlias(String alias) {
-    return $SyncQueueTable(attachedDatabase, alias);
+  $BookmarksTable createAlias(String alias) {
+    return $BookmarksTable(attachedDatabase, alias);
   }
 }
 
-class SyncQueueEntry extends DataClass implements Insertable<SyncQueueEntry> {
-  final int id;
-  final String entity;
-  final String payloadJson;
-  final DateTime createdAt;
-  final int tries;
-  const SyncQueueEntry({
-    required this.id,
-    required this.entity,
-    required this.payloadJson,
-    required this.createdAt,
-    required this.tries,
+class Bookmark extends DataClass implements Insertable<Bookmark> {
+  final String profileId;
+  final String lessonId;
+
+  /// متى أُزيل. null = محفوظ حاليًا.
+  final DateTime? removedAt;
+
+  /// وقت آخر تعديل على الهاتف (للترتيب في الواجهة فقط، لا لحسم التعارض).
+  final DateTime updatedAt;
+
+  /// يزيد واحدًا مع كل تعديل محلي.
+  final int localVersion;
+
+  /// متى رُفع آخر تعديل. null = فيه تعديل لم يُرفع بعد.
+  final DateTime? syncedAt;
+  const Bookmark({
+    required this.profileId,
+    required this.lessonId,
+    this.removedAt,
+    required this.updatedAt,
+    required this.localVersion,
+    this.syncedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['entity'] = Variable<String>(entity);
-    map['payload_json'] = Variable<String>(payloadJson);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['tries'] = Variable<int>(tries);
+    map['profile_id'] = Variable<String>(profileId);
+    map['lesson_id'] = Variable<String>(lessonId);
+    if (!nullToAbsent || removedAt != null) {
+      map['removed_at'] = Variable<DateTime>(removedAt);
+    }
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['local_version'] = Variable<int>(localVersion);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
     return map;
   }
 
-  SyncQueueCompanion toCompanion(bool nullToAbsent) {
-    return SyncQueueCompanion(
-      id: Value(id),
-      entity: Value(entity),
-      payloadJson: Value(payloadJson),
-      createdAt: Value(createdAt),
-      tries: Value(tries),
+  BookmarksCompanion toCompanion(bool nullToAbsent) {
+    return BookmarksCompanion(
+      profileId: Value(profileId),
+      lessonId: Value(lessonId),
+      removedAt: removedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(removedAt),
+      updatedAt: Value(updatedAt),
+      localVersion: Value(localVersion),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
     );
   }
 
-  factory SyncQueueEntry.fromJson(
+  factory Bookmark.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return SyncQueueEntry(
-      id: serializer.fromJson<int>(json['id']),
-      entity: serializer.fromJson<String>(json['entity']),
-      payloadJson: serializer.fromJson<String>(json['payloadJson']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      tries: serializer.fromJson<int>(json['tries']),
+    return Bookmark(
+      profileId: serializer.fromJson<String>(json['profileId']),
+      lessonId: serializer.fromJson<String>(json['lessonId']),
+      removedAt: serializer.fromJson<DateTime?>(json['removedAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      localVersion: serializer.fromJson<int>(json['localVersion']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'entity': serializer.toJson<String>(entity),
-      'payloadJson': serializer.toJson<String>(payloadJson),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'tries': serializer.toJson<int>(tries),
+      'profileId': serializer.toJson<String>(profileId),
+      'lessonId': serializer.toJson<String>(lessonId),
+      'removedAt': serializer.toJson<DateTime?>(removedAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'localVersion': serializer.toJson<int>(localVersion),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
     };
   }
 
-  SyncQueueEntry copyWith({
-    int? id,
-    String? entity,
-    String? payloadJson,
-    DateTime? createdAt,
-    int? tries,
-  }) => SyncQueueEntry(
-    id: id ?? this.id,
-    entity: entity ?? this.entity,
-    payloadJson: payloadJson ?? this.payloadJson,
-    createdAt: createdAt ?? this.createdAt,
-    tries: tries ?? this.tries,
+  Bookmark copyWith({
+    String? profileId,
+    String? lessonId,
+    Value<DateTime?> removedAt = const Value.absent(),
+    DateTime? updatedAt,
+    int? localVersion,
+    Value<DateTime?> syncedAt = const Value.absent(),
+  }) => Bookmark(
+    profileId: profileId ?? this.profileId,
+    lessonId: lessonId ?? this.lessonId,
+    removedAt: removedAt.present ? removedAt.value : this.removedAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    localVersion: localVersion ?? this.localVersion,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
   );
-  SyncQueueEntry copyWithCompanion(SyncQueueCompanion data) {
-    return SyncQueueEntry(
-      id: data.id.present ? data.id.value : this.id,
-      entity: data.entity.present ? data.entity.value : this.entity,
-      payloadJson: data.payloadJson.present
-          ? data.payloadJson.value
-          : this.payloadJson,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      tries: data.tries.present ? data.tries.value : this.tries,
+  Bookmark copyWithCompanion(BookmarksCompanion data) {
+    return Bookmark(
+      profileId: data.profileId.present ? data.profileId.value : this.profileId,
+      lessonId: data.lessonId.present ? data.lessonId.value : this.lessonId,
+      removedAt: data.removedAt.present ? data.removedAt.value : this.removedAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      localVersion: data.localVersion.present
+          ? data.localVersion.value
+          : this.localVersion,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('SyncQueueEntry(')
-          ..write('id: $id, ')
-          ..write('entity: $entity, ')
-          ..write('payloadJson: $payloadJson, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('tries: $tries')
+    return (StringBuffer('Bookmark(')
+          ..write('profileId: $profileId, ')
+          ..write('lessonId: $lessonId, ')
+          ..write('removedAt: $removedAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('localVersion: $localVersion, ')
+          ..write('syncedAt: $syncedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, entity, payloadJson, createdAt, tries);
+  int get hashCode => Object.hash(
+    profileId,
+    lessonId,
+    removedAt,
+    updatedAt,
+    localVersion,
+    syncedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is SyncQueueEntry &&
-          other.id == this.id &&
-          other.entity == this.entity &&
-          other.payloadJson == this.payloadJson &&
-          other.createdAt == this.createdAt &&
-          other.tries == this.tries);
+      (other is Bookmark &&
+          other.profileId == this.profileId &&
+          other.lessonId == this.lessonId &&
+          other.removedAt == this.removedAt &&
+          other.updatedAt == this.updatedAt &&
+          other.localVersion == this.localVersion &&
+          other.syncedAt == this.syncedAt);
 }
 
-class SyncQueueCompanion extends UpdateCompanion<SyncQueueEntry> {
-  final Value<int> id;
-  final Value<String> entity;
-  final Value<String> payloadJson;
-  final Value<DateTime> createdAt;
-  final Value<int> tries;
-  const SyncQueueCompanion({
-    this.id = const Value.absent(),
-    this.entity = const Value.absent(),
-    this.payloadJson = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.tries = const Value.absent(),
+class BookmarksCompanion extends UpdateCompanion<Bookmark> {
+  final Value<String> profileId;
+  final Value<String> lessonId;
+  final Value<DateTime?> removedAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> localVersion;
+  final Value<DateTime?> syncedAt;
+  final Value<int> rowid;
+  const BookmarksCompanion({
+    this.profileId = const Value.absent(),
+    this.lessonId = const Value.absent(),
+    this.removedAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.localVersion = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
-  SyncQueueCompanion.insert({
-    this.id = const Value.absent(),
-    required String entity,
-    required String payloadJson,
-    required DateTime createdAt,
-    this.tries = const Value.absent(),
-  }) : entity = Value(entity),
-       payloadJson = Value(payloadJson),
-       createdAt = Value(createdAt);
-  static Insertable<SyncQueueEntry> custom({
-    Expression<int>? id,
-    Expression<String>? entity,
-    Expression<String>? payloadJson,
-    Expression<DateTime>? createdAt,
-    Expression<int>? tries,
+  BookmarksCompanion.insert({
+    required String profileId,
+    required String lessonId,
+    this.removedAt = const Value.absent(),
+    required DateTime updatedAt,
+    this.localVersion = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : profileId = Value(profileId),
+       lessonId = Value(lessonId),
+       updatedAt = Value(updatedAt);
+  static Insertable<Bookmark> custom({
+    Expression<String>? profileId,
+    Expression<String>? lessonId,
+    Expression<DateTime>? removedAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? localVersion,
+    Expression<DateTime>? syncedAt,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (entity != null) 'entity': entity,
-      if (payloadJson != null) 'payload_json': payloadJson,
-      if (createdAt != null) 'created_at': createdAt,
-      if (tries != null) 'tries': tries,
+      if (profileId != null) 'profile_id': profileId,
+      if (lessonId != null) 'lesson_id': lessonId,
+      if (removedAt != null) 'removed_at': removedAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (localVersion != null) 'local_version': localVersion,
+      if (syncedAt != null) 'synced_at': syncedAt,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
-  SyncQueueCompanion copyWith({
-    Value<int>? id,
-    Value<String>? entity,
-    Value<String>? payloadJson,
-    Value<DateTime>? createdAt,
-    Value<int>? tries,
+  BookmarksCompanion copyWith({
+    Value<String>? profileId,
+    Value<String>? lessonId,
+    Value<DateTime?>? removedAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? localVersion,
+    Value<DateTime?>? syncedAt,
+    Value<int>? rowid,
   }) {
-    return SyncQueueCompanion(
-      id: id ?? this.id,
-      entity: entity ?? this.entity,
-      payloadJson: payloadJson ?? this.payloadJson,
-      createdAt: createdAt ?? this.createdAt,
-      tries: tries ?? this.tries,
+    return BookmarksCompanion(
+      profileId: profileId ?? this.profileId,
+      lessonId: lessonId ?? this.lessonId,
+      removedAt: removedAt ?? this.removedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      localVersion: localVersion ?? this.localVersion,
+      syncedAt: syncedAt ?? this.syncedAt,
+      rowid: rowid ?? this.rowid,
     );
   }
 
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
+    if (profileId.present) {
+      map['profile_id'] = Variable<String>(profileId.value);
     }
-    if (entity.present) {
-      map['entity'] = Variable<String>(entity.value);
+    if (lessonId.present) {
+      map['lesson_id'] = Variable<String>(lessonId.value);
     }
-    if (payloadJson.present) {
-      map['payload_json'] = Variable<String>(payloadJson.value);
+    if (removedAt.present) {
+      map['removed_at'] = Variable<DateTime>(removedAt.value);
     }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
-    if (tries.present) {
-      map['tries'] = Variable<int>(tries.value);
+    if (localVersion.present) {
+      map['local_version'] = Variable<int>(localVersion.value);
+    }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
     }
     return map;
   }
 
   @override
   String toString() {
-    return (StringBuffer('SyncQueueCompanion(')
-          ..write('id: $id, ')
-          ..write('entity: $entity, ')
-          ..write('payloadJson: $payloadJson, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('tries: $tries')
+    return (StringBuffer('BookmarksCompanion(')
+          ..write('profileId: $profileId, ')
+          ..write('lessonId: $lessonId, ')
+          ..write('removedAt: $removedAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('localVersion: $localVersion, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -3152,6 +3670,2216 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   }
 }
 
+class $ContentManifestsTable extends ContentManifests
+    with TableInfo<$ContentManifestsTable, ContentManifest> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ContentManifestsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _gradeMeta = const VerificationMeta('grade');
+  @override
+  late final GeneratedColumn<int> grade = GeneratedColumn<int>(
+    'grade',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sequenceMeta = const VerificationMeta(
+    'sequence',
+  );
+  @override
+  late final GeneratedColumn<int> sequence = GeneratedColumn<int>(
+    'sequence',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bodyMeta = const VerificationMeta('body');
+  @override
+  late final GeneratedColumn<String> body = GeneratedColumn<String>(
+    'body',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _signatureMeta = const VerificationMeta(
+    'signature',
+  );
+  @override
+  late final GeneratedColumn<String> signature = GeneratedColumn<String>(
+    'signature',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _catalogSha256Meta = const VerificationMeta(
+    'catalogSha256',
+  );
+  @override
+  late final GeneratedColumn<String> catalogSha256 = GeneratedColumn<String>(
+    'catalog_sha256',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pendingCatalogSha256Meta =
+      const VerificationMeta('pendingCatalogSha256');
+  @override
+  late final GeneratedColumn<String> pendingCatalogSha256 =
+      GeneratedColumn<String>(
+        'pending_catalog_sha256',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _fetchedAtMeta = const VerificationMeta(
+    'fetchedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fetchedAt = GeneratedColumn<DateTime>(
+    'fetched_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    grade,
+    sequence,
+    body,
+    signature,
+    catalogSha256,
+    pendingCatalogSha256,
+    fetchedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'content_manifests';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ContentManifest> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('grade')) {
+      context.handle(
+        _gradeMeta,
+        grade.isAcceptableOrUnknown(data['grade']!, _gradeMeta),
+      );
+    }
+    if (data.containsKey('sequence')) {
+      context.handle(
+        _sequenceMeta,
+        sequence.isAcceptableOrUnknown(data['sequence']!, _sequenceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sequenceMeta);
+    }
+    if (data.containsKey('body')) {
+      context.handle(
+        _bodyMeta,
+        body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bodyMeta);
+    }
+    if (data.containsKey('signature')) {
+      context.handle(
+        _signatureMeta,
+        signature.isAcceptableOrUnknown(data['signature']!, _signatureMeta),
+      );
+    }
+    if (data.containsKey('catalog_sha256')) {
+      context.handle(
+        _catalogSha256Meta,
+        catalogSha256.isAcceptableOrUnknown(
+          data['catalog_sha256']!,
+          _catalogSha256Meta,
+        ),
+      );
+    }
+    if (data.containsKey('pending_catalog_sha256')) {
+      context.handle(
+        _pendingCatalogSha256Meta,
+        pendingCatalogSha256.isAcceptableOrUnknown(
+          data['pending_catalog_sha256']!,
+          _pendingCatalogSha256Meta,
+        ),
+      );
+    }
+    if (data.containsKey('fetched_at')) {
+      context.handle(
+        _fetchedAtMeta,
+        fetchedAt.isAcceptableOrUnknown(data['fetched_at']!, _fetchedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fetchedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {grade};
+  @override
+  ContentManifest map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ContentManifest(
+      grade: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}grade'],
+      )!,
+      sequence: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sequence'],
+      )!,
+      body: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body'],
+      )!,
+      signature: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}signature'],
+      ),
+      catalogSha256: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}catalog_sha256'],
+      ),
+      pendingCatalogSha256: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pending_catalog_sha256'],
+      ),
+      fetchedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fetched_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ContentManifestsTable createAlias(String alias) {
+    return $ContentManifestsTable(attachedDatabase, alias);
+  }
+}
+
+class ContentManifest extends DataClass implements Insertable<ContentManifest> {
+  final int grade;
+
+  /// يزيد مع كل نشر. فهرس رقمه أقل من هذا يُرفض.
+  final int sequence;
+
+  /// نص الفهرس كما وصل وفُحص توقيعه.
+  final String body;
+
+  /// توقيعه (base64) كما وصل، ليُرسل مع الفهرس إلى هاتف آخر (ADR 003؛
+  /// الإصدار 6). null لفهرس قُبل قبل ذلك: يُشارك بعد الفحص التالي.
+  final String? signature;
+
+  /// بصمة الكتالوج المفعّل لهذا الصف. null = كتالوج التطبيق.
+  final String? catalogSha256;
+
+  /// كتالوج الفهرس الأحدث، ينتظر اكتمال تنزيله ليصبح المفعّل.
+  final String? pendingCatalogSha256;
+  final DateTime fetchedAt;
+  const ContentManifest({
+    required this.grade,
+    required this.sequence,
+    required this.body,
+    this.signature,
+    this.catalogSha256,
+    this.pendingCatalogSha256,
+    required this.fetchedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['grade'] = Variable<int>(grade);
+    map['sequence'] = Variable<int>(sequence);
+    map['body'] = Variable<String>(body);
+    if (!nullToAbsent || signature != null) {
+      map['signature'] = Variable<String>(signature);
+    }
+    if (!nullToAbsent || catalogSha256 != null) {
+      map['catalog_sha256'] = Variable<String>(catalogSha256);
+    }
+    if (!nullToAbsent || pendingCatalogSha256 != null) {
+      map['pending_catalog_sha256'] = Variable<String>(pendingCatalogSha256);
+    }
+    map['fetched_at'] = Variable<DateTime>(fetchedAt);
+    return map;
+  }
+
+  ContentManifestsCompanion toCompanion(bool nullToAbsent) {
+    return ContentManifestsCompanion(
+      grade: Value(grade),
+      sequence: Value(sequence),
+      body: Value(body),
+      signature: signature == null && nullToAbsent
+          ? const Value.absent()
+          : Value(signature),
+      catalogSha256: catalogSha256 == null && nullToAbsent
+          ? const Value.absent()
+          : Value(catalogSha256),
+      pendingCatalogSha256: pendingCatalogSha256 == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pendingCatalogSha256),
+      fetchedAt: Value(fetchedAt),
+    );
+  }
+
+  factory ContentManifest.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ContentManifest(
+      grade: serializer.fromJson<int>(json['grade']),
+      sequence: serializer.fromJson<int>(json['sequence']),
+      body: serializer.fromJson<String>(json['body']),
+      signature: serializer.fromJson<String?>(json['signature']),
+      catalogSha256: serializer.fromJson<String?>(json['catalogSha256']),
+      pendingCatalogSha256: serializer.fromJson<String?>(
+        json['pendingCatalogSha256'],
+      ),
+      fetchedAt: serializer.fromJson<DateTime>(json['fetchedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'grade': serializer.toJson<int>(grade),
+      'sequence': serializer.toJson<int>(sequence),
+      'body': serializer.toJson<String>(body),
+      'signature': serializer.toJson<String?>(signature),
+      'catalogSha256': serializer.toJson<String?>(catalogSha256),
+      'pendingCatalogSha256': serializer.toJson<String?>(pendingCatalogSha256),
+      'fetchedAt': serializer.toJson<DateTime>(fetchedAt),
+    };
+  }
+
+  ContentManifest copyWith({
+    int? grade,
+    int? sequence,
+    String? body,
+    Value<String?> signature = const Value.absent(),
+    Value<String?> catalogSha256 = const Value.absent(),
+    Value<String?> pendingCatalogSha256 = const Value.absent(),
+    DateTime? fetchedAt,
+  }) => ContentManifest(
+    grade: grade ?? this.grade,
+    sequence: sequence ?? this.sequence,
+    body: body ?? this.body,
+    signature: signature.present ? signature.value : this.signature,
+    catalogSha256: catalogSha256.present
+        ? catalogSha256.value
+        : this.catalogSha256,
+    pendingCatalogSha256: pendingCatalogSha256.present
+        ? pendingCatalogSha256.value
+        : this.pendingCatalogSha256,
+    fetchedAt: fetchedAt ?? this.fetchedAt,
+  );
+  ContentManifest copyWithCompanion(ContentManifestsCompanion data) {
+    return ContentManifest(
+      grade: data.grade.present ? data.grade.value : this.grade,
+      sequence: data.sequence.present ? data.sequence.value : this.sequence,
+      body: data.body.present ? data.body.value : this.body,
+      signature: data.signature.present ? data.signature.value : this.signature,
+      catalogSha256: data.catalogSha256.present
+          ? data.catalogSha256.value
+          : this.catalogSha256,
+      pendingCatalogSha256: data.pendingCatalogSha256.present
+          ? data.pendingCatalogSha256.value
+          : this.pendingCatalogSha256,
+      fetchedAt: data.fetchedAt.present ? data.fetchedAt.value : this.fetchedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentManifest(')
+          ..write('grade: $grade, ')
+          ..write('sequence: $sequence, ')
+          ..write('body: $body, ')
+          ..write('signature: $signature, ')
+          ..write('catalogSha256: $catalogSha256, ')
+          ..write('pendingCatalogSha256: $pendingCatalogSha256, ')
+          ..write('fetchedAt: $fetchedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    grade,
+    sequence,
+    body,
+    signature,
+    catalogSha256,
+    pendingCatalogSha256,
+    fetchedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ContentManifest &&
+          other.grade == this.grade &&
+          other.sequence == this.sequence &&
+          other.body == this.body &&
+          other.signature == this.signature &&
+          other.catalogSha256 == this.catalogSha256 &&
+          other.pendingCatalogSha256 == this.pendingCatalogSha256 &&
+          other.fetchedAt == this.fetchedAt);
+}
+
+class ContentManifestsCompanion extends UpdateCompanion<ContentManifest> {
+  final Value<int> grade;
+  final Value<int> sequence;
+  final Value<String> body;
+  final Value<String?> signature;
+  final Value<String?> catalogSha256;
+  final Value<String?> pendingCatalogSha256;
+  final Value<DateTime> fetchedAt;
+  const ContentManifestsCompanion({
+    this.grade = const Value.absent(),
+    this.sequence = const Value.absent(),
+    this.body = const Value.absent(),
+    this.signature = const Value.absent(),
+    this.catalogSha256 = const Value.absent(),
+    this.pendingCatalogSha256 = const Value.absent(),
+    this.fetchedAt = const Value.absent(),
+  });
+  ContentManifestsCompanion.insert({
+    this.grade = const Value.absent(),
+    required int sequence,
+    required String body,
+    this.signature = const Value.absent(),
+    this.catalogSha256 = const Value.absent(),
+    this.pendingCatalogSha256 = const Value.absent(),
+    required DateTime fetchedAt,
+  }) : sequence = Value(sequence),
+       body = Value(body),
+       fetchedAt = Value(fetchedAt);
+  static Insertable<ContentManifest> custom({
+    Expression<int>? grade,
+    Expression<int>? sequence,
+    Expression<String>? body,
+    Expression<String>? signature,
+    Expression<String>? catalogSha256,
+    Expression<String>? pendingCatalogSha256,
+    Expression<DateTime>? fetchedAt,
+  }) {
+    return RawValuesInsertable({
+      if (grade != null) 'grade': grade,
+      if (sequence != null) 'sequence': sequence,
+      if (body != null) 'body': body,
+      if (signature != null) 'signature': signature,
+      if (catalogSha256 != null) 'catalog_sha256': catalogSha256,
+      if (pendingCatalogSha256 != null)
+        'pending_catalog_sha256': pendingCatalogSha256,
+      if (fetchedAt != null) 'fetched_at': fetchedAt,
+    });
+  }
+
+  ContentManifestsCompanion copyWith({
+    Value<int>? grade,
+    Value<int>? sequence,
+    Value<String>? body,
+    Value<String?>? signature,
+    Value<String?>? catalogSha256,
+    Value<String?>? pendingCatalogSha256,
+    Value<DateTime>? fetchedAt,
+  }) {
+    return ContentManifestsCompanion(
+      grade: grade ?? this.grade,
+      sequence: sequence ?? this.sequence,
+      body: body ?? this.body,
+      signature: signature ?? this.signature,
+      catalogSha256: catalogSha256 ?? this.catalogSha256,
+      pendingCatalogSha256: pendingCatalogSha256 ?? this.pendingCatalogSha256,
+      fetchedAt: fetchedAt ?? this.fetchedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (grade.present) {
+      map['grade'] = Variable<int>(grade.value);
+    }
+    if (sequence.present) {
+      map['sequence'] = Variable<int>(sequence.value);
+    }
+    if (body.present) {
+      map['body'] = Variable<String>(body.value);
+    }
+    if (signature.present) {
+      map['signature'] = Variable<String>(signature.value);
+    }
+    if (catalogSha256.present) {
+      map['catalog_sha256'] = Variable<String>(catalogSha256.value);
+    }
+    if (pendingCatalogSha256.present) {
+      map['pending_catalog_sha256'] = Variable<String>(
+        pendingCatalogSha256.value,
+      );
+    }
+    if (fetchedAt.present) {
+      map['fetched_at'] = Variable<DateTime>(fetchedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentManifestsCompanion(')
+          ..write('grade: $grade, ')
+          ..write('sequence: $sequence, ')
+          ..write('body: $body, ')
+          ..write('signature: $signature, ')
+          ..write('catalogSha256: $catalogSha256, ')
+          ..write('pendingCatalogSha256: $pendingCatalogSha256, ')
+          ..write('fetchedAt: $fetchedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ContentLessonsTable extends ContentLessons
+    with TableInfo<$ContentLessonsTable, ContentLesson> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ContentLessonsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _lessonIdMeta = const VerificationMeta(
+    'lessonId',
+  );
+  @override
+  late final GeneratedColumn<String> lessonId = GeneratedColumn<String>(
+    'lesson_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _contentFormatMeta = const VerificationMeta(
+    'contentFormat',
+  );
+  @override
+  late final GeneratedColumn<int> contentFormat = GeneratedColumn<int>(
+    'content_format',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _filesMeta = const VerificationMeta('files');
+  @override
+  late final GeneratedColumn<String> files = GeneratedColumn<String>(
+    'files',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _videoSha256Meta = const VerificationMeta(
+    'videoSha256',
+  );
+  @override
+  late final GeneratedColumn<String> videoSha256 = GeneratedColumn<String>(
+    'video_sha256',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _videoSizeMeta = const VerificationMeta(
+    'videoSize',
+  );
+  @override
+  late final GeneratedColumn<int> videoSize = GeneratedColumn<int>(
+    'video_size',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _attachmentsMeta = const VerificationMeta(
+    'attachments',
+  );
+  @override
+  late final GeneratedColumn<String> attachments = GeneratedColumn<String>(
+    'attachments',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _installedAtMeta = const VerificationMeta(
+    'installedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> installedAt = GeneratedColumn<DateTime>(
+    'installed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pendingVersionMeta = const VerificationMeta(
+    'pendingVersion',
+  );
+  @override
+  late final GeneratedColumn<int> pendingVersion = GeneratedColumn<int>(
+    'pending_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pendingContentFormatMeta =
+      const VerificationMeta('pendingContentFormat');
+  @override
+  late final GeneratedColumn<int> pendingContentFormat = GeneratedColumn<int>(
+    'pending_content_format',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pendingFilesMeta = const VerificationMeta(
+    'pendingFiles',
+  );
+  @override
+  late final GeneratedColumn<String> pendingFiles = GeneratedColumn<String>(
+    'pending_files',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pendingVideoSha256Meta =
+      const VerificationMeta('pendingVideoSha256');
+  @override
+  late final GeneratedColumn<String> pendingVideoSha256 =
+      GeneratedColumn<String>(
+        'pending_video_sha256',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _pendingVideoSizeMeta = const VerificationMeta(
+    'pendingVideoSize',
+  );
+  @override
+  late final GeneratedColumn<int> pendingVideoSize = GeneratedColumn<int>(
+    'pending_video_size',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pendingAttachmentsMeta =
+      const VerificationMeta('pendingAttachments');
+  @override
+  late final GeneratedColumn<String> pendingAttachments =
+      GeneratedColumn<String>(
+        'pending_attachments',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    lessonId,
+    version,
+    contentFormat,
+    files,
+    videoSha256,
+    videoSize,
+    attachments,
+    installedAt,
+    pendingVersion,
+    pendingContentFormat,
+    pendingFiles,
+    pendingVideoSha256,
+    pendingVideoSize,
+    pendingAttachments,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'content_lessons';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ContentLesson> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('lesson_id')) {
+      context.handle(
+        _lessonIdMeta,
+        lessonId.isAcceptableOrUnknown(data['lesson_id']!, _lessonIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lessonIdMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('content_format')) {
+      context.handle(
+        _contentFormatMeta,
+        contentFormat.isAcceptableOrUnknown(
+          data['content_format']!,
+          _contentFormatMeta,
+        ),
+      );
+    }
+    if (data.containsKey('files')) {
+      context.handle(
+        _filesMeta,
+        files.isAcceptableOrUnknown(data['files']!, _filesMeta),
+      );
+    }
+    if (data.containsKey('video_sha256')) {
+      context.handle(
+        _videoSha256Meta,
+        videoSha256.isAcceptableOrUnknown(
+          data['video_sha256']!,
+          _videoSha256Meta,
+        ),
+      );
+    }
+    if (data.containsKey('video_size')) {
+      context.handle(
+        _videoSizeMeta,
+        videoSize.isAcceptableOrUnknown(data['video_size']!, _videoSizeMeta),
+      );
+    }
+    if (data.containsKey('attachments')) {
+      context.handle(
+        _attachmentsMeta,
+        attachments.isAcceptableOrUnknown(
+          data['attachments']!,
+          _attachmentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('installed_at')) {
+      context.handle(
+        _installedAtMeta,
+        installedAt.isAcceptableOrUnknown(
+          data['installed_at']!,
+          _installedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pending_version')) {
+      context.handle(
+        _pendingVersionMeta,
+        pendingVersion.isAcceptableOrUnknown(
+          data['pending_version']!,
+          _pendingVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pending_content_format')) {
+      context.handle(
+        _pendingContentFormatMeta,
+        pendingContentFormat.isAcceptableOrUnknown(
+          data['pending_content_format']!,
+          _pendingContentFormatMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pending_files')) {
+      context.handle(
+        _pendingFilesMeta,
+        pendingFiles.isAcceptableOrUnknown(
+          data['pending_files']!,
+          _pendingFilesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pending_video_sha256')) {
+      context.handle(
+        _pendingVideoSha256Meta,
+        pendingVideoSha256.isAcceptableOrUnknown(
+          data['pending_video_sha256']!,
+          _pendingVideoSha256Meta,
+        ),
+      );
+    }
+    if (data.containsKey('pending_video_size')) {
+      context.handle(
+        _pendingVideoSizeMeta,
+        pendingVideoSize.isAcceptableOrUnknown(
+          data['pending_video_size']!,
+          _pendingVideoSizeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pending_attachments')) {
+      context.handle(
+        _pendingAttachmentsMeta,
+        pendingAttachments.isAcceptableOrUnknown(
+          data['pending_attachments']!,
+          _pendingAttachmentsMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {lessonId};
+  @override
+  ContentLesson map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ContentLesson(
+      lessonId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}lesson_id'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      contentFormat: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}content_format'],
+      )!,
+      files: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}files'],
+      )!,
+      videoSha256: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}video_sha256'],
+      ),
+      videoSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}video_size'],
+      ),
+      attachments: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}attachments'],
+      ),
+      installedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}installed_at'],
+      ),
+      pendingVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pending_version'],
+      ),
+      pendingContentFormat: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pending_content_format'],
+      ),
+      pendingFiles: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pending_files'],
+      ),
+      pendingVideoSha256: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pending_video_sha256'],
+      ),
+      pendingVideoSize: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}pending_video_size'],
+      ),
+      pendingAttachments: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pending_attachments'],
+      ),
+    );
+  }
+
+  @override
+  $ContentLessonsTable createAlias(String alias) {
+    return $ContentLessonsTable(attachedDatabase, alias);
+  }
+}
+
+class ContentLesson extends DataClass implements Insertable<ContentLesson> {
+  final String lessonId;
+
+  /// النسخة المثبّتة. 0 = لا نسخة منزَّلة بعد (نسخة التطبيق تُعرض).
+  final int version;
+  final int contentFormat;
+
+  /// ملفات النسخة المثبّتة: JSON `{path: sha256}`.
+  final String files;
+
+  /// فيديو النسخة المثبّتة (إن وُجد في الفهرس، نُزِّل أم لا).
+  final String? videoSha256;
+  final int? videoSize;
+
+  /// مرفقات النسخة المثبّتة (ملخص PDF مثلًا): JSON `{sha256: الحجم}`، تُنزَّل باختيار
+  /// الطالب (الإصدار 5).
+  final String? attachments;
+  final DateTime? installedAt;
+
+  /// النسخة المنتظرة وملفاتها، أو null إن لا شيء ينتظر.
+  final int? pendingVersion;
+  final int? pendingContentFormat;
+  final String? pendingFiles;
+  final String? pendingVideoSha256;
+  final int? pendingVideoSize;
+  final String? pendingAttachments;
+  const ContentLesson({
+    required this.lessonId,
+    required this.version,
+    required this.contentFormat,
+    required this.files,
+    this.videoSha256,
+    this.videoSize,
+    this.attachments,
+    this.installedAt,
+    this.pendingVersion,
+    this.pendingContentFormat,
+    this.pendingFiles,
+    this.pendingVideoSha256,
+    this.pendingVideoSize,
+    this.pendingAttachments,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['lesson_id'] = Variable<String>(lessonId);
+    map['version'] = Variable<int>(version);
+    map['content_format'] = Variable<int>(contentFormat);
+    map['files'] = Variable<String>(files);
+    if (!nullToAbsent || videoSha256 != null) {
+      map['video_sha256'] = Variable<String>(videoSha256);
+    }
+    if (!nullToAbsent || videoSize != null) {
+      map['video_size'] = Variable<int>(videoSize);
+    }
+    if (!nullToAbsent || attachments != null) {
+      map['attachments'] = Variable<String>(attachments);
+    }
+    if (!nullToAbsent || installedAt != null) {
+      map['installed_at'] = Variable<DateTime>(installedAt);
+    }
+    if (!nullToAbsent || pendingVersion != null) {
+      map['pending_version'] = Variable<int>(pendingVersion);
+    }
+    if (!nullToAbsent || pendingContentFormat != null) {
+      map['pending_content_format'] = Variable<int>(pendingContentFormat);
+    }
+    if (!nullToAbsent || pendingFiles != null) {
+      map['pending_files'] = Variable<String>(pendingFiles);
+    }
+    if (!nullToAbsent || pendingVideoSha256 != null) {
+      map['pending_video_sha256'] = Variable<String>(pendingVideoSha256);
+    }
+    if (!nullToAbsent || pendingVideoSize != null) {
+      map['pending_video_size'] = Variable<int>(pendingVideoSize);
+    }
+    if (!nullToAbsent || pendingAttachments != null) {
+      map['pending_attachments'] = Variable<String>(pendingAttachments);
+    }
+    return map;
+  }
+
+  ContentLessonsCompanion toCompanion(bool nullToAbsent) {
+    return ContentLessonsCompanion(
+      lessonId: Value(lessonId),
+      version: Value(version),
+      contentFormat: Value(contentFormat),
+      files: Value(files),
+      videoSha256: videoSha256 == null && nullToAbsent
+          ? const Value.absent()
+          : Value(videoSha256),
+      videoSize: videoSize == null && nullToAbsent
+          ? const Value.absent()
+          : Value(videoSize),
+      attachments: attachments == null && nullToAbsent
+          ? const Value.absent()
+          : Value(attachments),
+      installedAt: installedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(installedAt),
+      pendingVersion: pendingVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pendingVersion),
+      pendingContentFormat: pendingContentFormat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pendingContentFormat),
+      pendingFiles: pendingFiles == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pendingFiles),
+      pendingVideoSha256: pendingVideoSha256 == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pendingVideoSha256),
+      pendingVideoSize: pendingVideoSize == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pendingVideoSize),
+      pendingAttachments: pendingAttachments == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pendingAttachments),
+    );
+  }
+
+  factory ContentLesson.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ContentLesson(
+      lessonId: serializer.fromJson<String>(json['lessonId']),
+      version: serializer.fromJson<int>(json['version']),
+      contentFormat: serializer.fromJson<int>(json['contentFormat']),
+      files: serializer.fromJson<String>(json['files']),
+      videoSha256: serializer.fromJson<String?>(json['videoSha256']),
+      videoSize: serializer.fromJson<int?>(json['videoSize']),
+      attachments: serializer.fromJson<String?>(json['attachments']),
+      installedAt: serializer.fromJson<DateTime?>(json['installedAt']),
+      pendingVersion: serializer.fromJson<int?>(json['pendingVersion']),
+      pendingContentFormat: serializer.fromJson<int?>(
+        json['pendingContentFormat'],
+      ),
+      pendingFiles: serializer.fromJson<String?>(json['pendingFiles']),
+      pendingVideoSha256: serializer.fromJson<String?>(
+        json['pendingVideoSha256'],
+      ),
+      pendingVideoSize: serializer.fromJson<int?>(json['pendingVideoSize']),
+      pendingAttachments: serializer.fromJson<String?>(
+        json['pendingAttachments'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'lessonId': serializer.toJson<String>(lessonId),
+      'version': serializer.toJson<int>(version),
+      'contentFormat': serializer.toJson<int>(contentFormat),
+      'files': serializer.toJson<String>(files),
+      'videoSha256': serializer.toJson<String?>(videoSha256),
+      'videoSize': serializer.toJson<int?>(videoSize),
+      'attachments': serializer.toJson<String?>(attachments),
+      'installedAt': serializer.toJson<DateTime?>(installedAt),
+      'pendingVersion': serializer.toJson<int?>(pendingVersion),
+      'pendingContentFormat': serializer.toJson<int?>(pendingContentFormat),
+      'pendingFiles': serializer.toJson<String?>(pendingFiles),
+      'pendingVideoSha256': serializer.toJson<String?>(pendingVideoSha256),
+      'pendingVideoSize': serializer.toJson<int?>(pendingVideoSize),
+      'pendingAttachments': serializer.toJson<String?>(pendingAttachments),
+    };
+  }
+
+  ContentLesson copyWith({
+    String? lessonId,
+    int? version,
+    int? contentFormat,
+    String? files,
+    Value<String?> videoSha256 = const Value.absent(),
+    Value<int?> videoSize = const Value.absent(),
+    Value<String?> attachments = const Value.absent(),
+    Value<DateTime?> installedAt = const Value.absent(),
+    Value<int?> pendingVersion = const Value.absent(),
+    Value<int?> pendingContentFormat = const Value.absent(),
+    Value<String?> pendingFiles = const Value.absent(),
+    Value<String?> pendingVideoSha256 = const Value.absent(),
+    Value<int?> pendingVideoSize = const Value.absent(),
+    Value<String?> pendingAttachments = const Value.absent(),
+  }) => ContentLesson(
+    lessonId: lessonId ?? this.lessonId,
+    version: version ?? this.version,
+    contentFormat: contentFormat ?? this.contentFormat,
+    files: files ?? this.files,
+    videoSha256: videoSha256.present ? videoSha256.value : this.videoSha256,
+    videoSize: videoSize.present ? videoSize.value : this.videoSize,
+    attachments: attachments.present ? attachments.value : this.attachments,
+    installedAt: installedAt.present ? installedAt.value : this.installedAt,
+    pendingVersion: pendingVersion.present
+        ? pendingVersion.value
+        : this.pendingVersion,
+    pendingContentFormat: pendingContentFormat.present
+        ? pendingContentFormat.value
+        : this.pendingContentFormat,
+    pendingFiles: pendingFiles.present ? pendingFiles.value : this.pendingFiles,
+    pendingVideoSha256: pendingVideoSha256.present
+        ? pendingVideoSha256.value
+        : this.pendingVideoSha256,
+    pendingVideoSize: pendingVideoSize.present
+        ? pendingVideoSize.value
+        : this.pendingVideoSize,
+    pendingAttachments: pendingAttachments.present
+        ? pendingAttachments.value
+        : this.pendingAttachments,
+  );
+  ContentLesson copyWithCompanion(ContentLessonsCompanion data) {
+    return ContentLesson(
+      lessonId: data.lessonId.present ? data.lessonId.value : this.lessonId,
+      version: data.version.present ? data.version.value : this.version,
+      contentFormat: data.contentFormat.present
+          ? data.contentFormat.value
+          : this.contentFormat,
+      files: data.files.present ? data.files.value : this.files,
+      videoSha256: data.videoSha256.present
+          ? data.videoSha256.value
+          : this.videoSha256,
+      videoSize: data.videoSize.present ? data.videoSize.value : this.videoSize,
+      attachments: data.attachments.present
+          ? data.attachments.value
+          : this.attachments,
+      installedAt: data.installedAt.present
+          ? data.installedAt.value
+          : this.installedAt,
+      pendingVersion: data.pendingVersion.present
+          ? data.pendingVersion.value
+          : this.pendingVersion,
+      pendingContentFormat: data.pendingContentFormat.present
+          ? data.pendingContentFormat.value
+          : this.pendingContentFormat,
+      pendingFiles: data.pendingFiles.present
+          ? data.pendingFiles.value
+          : this.pendingFiles,
+      pendingVideoSha256: data.pendingVideoSha256.present
+          ? data.pendingVideoSha256.value
+          : this.pendingVideoSha256,
+      pendingVideoSize: data.pendingVideoSize.present
+          ? data.pendingVideoSize.value
+          : this.pendingVideoSize,
+      pendingAttachments: data.pendingAttachments.present
+          ? data.pendingAttachments.value
+          : this.pendingAttachments,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentLesson(')
+          ..write('lessonId: $lessonId, ')
+          ..write('version: $version, ')
+          ..write('contentFormat: $contentFormat, ')
+          ..write('files: $files, ')
+          ..write('videoSha256: $videoSha256, ')
+          ..write('videoSize: $videoSize, ')
+          ..write('attachments: $attachments, ')
+          ..write('installedAt: $installedAt, ')
+          ..write('pendingVersion: $pendingVersion, ')
+          ..write('pendingContentFormat: $pendingContentFormat, ')
+          ..write('pendingFiles: $pendingFiles, ')
+          ..write('pendingVideoSha256: $pendingVideoSha256, ')
+          ..write('pendingVideoSize: $pendingVideoSize, ')
+          ..write('pendingAttachments: $pendingAttachments')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    lessonId,
+    version,
+    contentFormat,
+    files,
+    videoSha256,
+    videoSize,
+    attachments,
+    installedAt,
+    pendingVersion,
+    pendingContentFormat,
+    pendingFiles,
+    pendingVideoSha256,
+    pendingVideoSize,
+    pendingAttachments,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ContentLesson &&
+          other.lessonId == this.lessonId &&
+          other.version == this.version &&
+          other.contentFormat == this.contentFormat &&
+          other.files == this.files &&
+          other.videoSha256 == this.videoSha256 &&
+          other.videoSize == this.videoSize &&
+          other.attachments == this.attachments &&
+          other.installedAt == this.installedAt &&
+          other.pendingVersion == this.pendingVersion &&
+          other.pendingContentFormat == this.pendingContentFormat &&
+          other.pendingFiles == this.pendingFiles &&
+          other.pendingVideoSha256 == this.pendingVideoSha256 &&
+          other.pendingVideoSize == this.pendingVideoSize &&
+          other.pendingAttachments == this.pendingAttachments);
+}
+
+class ContentLessonsCompanion extends UpdateCompanion<ContentLesson> {
+  final Value<String> lessonId;
+  final Value<int> version;
+  final Value<int> contentFormat;
+  final Value<String> files;
+  final Value<String?> videoSha256;
+  final Value<int?> videoSize;
+  final Value<String?> attachments;
+  final Value<DateTime?> installedAt;
+  final Value<int?> pendingVersion;
+  final Value<int?> pendingContentFormat;
+  final Value<String?> pendingFiles;
+  final Value<String?> pendingVideoSha256;
+  final Value<int?> pendingVideoSize;
+  final Value<String?> pendingAttachments;
+  final Value<int> rowid;
+  const ContentLessonsCompanion({
+    this.lessonId = const Value.absent(),
+    this.version = const Value.absent(),
+    this.contentFormat = const Value.absent(),
+    this.files = const Value.absent(),
+    this.videoSha256 = const Value.absent(),
+    this.videoSize = const Value.absent(),
+    this.attachments = const Value.absent(),
+    this.installedAt = const Value.absent(),
+    this.pendingVersion = const Value.absent(),
+    this.pendingContentFormat = const Value.absent(),
+    this.pendingFiles = const Value.absent(),
+    this.pendingVideoSha256 = const Value.absent(),
+    this.pendingVideoSize = const Value.absent(),
+    this.pendingAttachments = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ContentLessonsCompanion.insert({
+    required String lessonId,
+    this.version = const Value.absent(),
+    this.contentFormat = const Value.absent(),
+    this.files = const Value.absent(),
+    this.videoSha256 = const Value.absent(),
+    this.videoSize = const Value.absent(),
+    this.attachments = const Value.absent(),
+    this.installedAt = const Value.absent(),
+    this.pendingVersion = const Value.absent(),
+    this.pendingContentFormat = const Value.absent(),
+    this.pendingFiles = const Value.absent(),
+    this.pendingVideoSha256 = const Value.absent(),
+    this.pendingVideoSize = const Value.absent(),
+    this.pendingAttachments = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : lessonId = Value(lessonId);
+  static Insertable<ContentLesson> custom({
+    Expression<String>? lessonId,
+    Expression<int>? version,
+    Expression<int>? contentFormat,
+    Expression<String>? files,
+    Expression<String>? videoSha256,
+    Expression<int>? videoSize,
+    Expression<String>? attachments,
+    Expression<DateTime>? installedAt,
+    Expression<int>? pendingVersion,
+    Expression<int>? pendingContentFormat,
+    Expression<String>? pendingFiles,
+    Expression<String>? pendingVideoSha256,
+    Expression<int>? pendingVideoSize,
+    Expression<String>? pendingAttachments,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (lessonId != null) 'lesson_id': lessonId,
+      if (version != null) 'version': version,
+      if (contentFormat != null) 'content_format': contentFormat,
+      if (files != null) 'files': files,
+      if (videoSha256 != null) 'video_sha256': videoSha256,
+      if (videoSize != null) 'video_size': videoSize,
+      if (attachments != null) 'attachments': attachments,
+      if (installedAt != null) 'installed_at': installedAt,
+      if (pendingVersion != null) 'pending_version': pendingVersion,
+      if (pendingContentFormat != null)
+        'pending_content_format': pendingContentFormat,
+      if (pendingFiles != null) 'pending_files': pendingFiles,
+      if (pendingVideoSha256 != null)
+        'pending_video_sha256': pendingVideoSha256,
+      if (pendingVideoSize != null) 'pending_video_size': pendingVideoSize,
+      if (pendingAttachments != null) 'pending_attachments': pendingAttachments,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ContentLessonsCompanion copyWith({
+    Value<String>? lessonId,
+    Value<int>? version,
+    Value<int>? contentFormat,
+    Value<String>? files,
+    Value<String?>? videoSha256,
+    Value<int?>? videoSize,
+    Value<String?>? attachments,
+    Value<DateTime?>? installedAt,
+    Value<int?>? pendingVersion,
+    Value<int?>? pendingContentFormat,
+    Value<String?>? pendingFiles,
+    Value<String?>? pendingVideoSha256,
+    Value<int?>? pendingVideoSize,
+    Value<String?>? pendingAttachments,
+    Value<int>? rowid,
+  }) {
+    return ContentLessonsCompanion(
+      lessonId: lessonId ?? this.lessonId,
+      version: version ?? this.version,
+      contentFormat: contentFormat ?? this.contentFormat,
+      files: files ?? this.files,
+      videoSha256: videoSha256 ?? this.videoSha256,
+      videoSize: videoSize ?? this.videoSize,
+      attachments: attachments ?? this.attachments,
+      installedAt: installedAt ?? this.installedAt,
+      pendingVersion: pendingVersion ?? this.pendingVersion,
+      pendingContentFormat: pendingContentFormat ?? this.pendingContentFormat,
+      pendingFiles: pendingFiles ?? this.pendingFiles,
+      pendingVideoSha256: pendingVideoSha256 ?? this.pendingVideoSha256,
+      pendingVideoSize: pendingVideoSize ?? this.pendingVideoSize,
+      pendingAttachments: pendingAttachments ?? this.pendingAttachments,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (lessonId.present) {
+      map['lesson_id'] = Variable<String>(lessonId.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (contentFormat.present) {
+      map['content_format'] = Variable<int>(contentFormat.value);
+    }
+    if (files.present) {
+      map['files'] = Variable<String>(files.value);
+    }
+    if (videoSha256.present) {
+      map['video_sha256'] = Variable<String>(videoSha256.value);
+    }
+    if (videoSize.present) {
+      map['video_size'] = Variable<int>(videoSize.value);
+    }
+    if (attachments.present) {
+      map['attachments'] = Variable<String>(attachments.value);
+    }
+    if (installedAt.present) {
+      map['installed_at'] = Variable<DateTime>(installedAt.value);
+    }
+    if (pendingVersion.present) {
+      map['pending_version'] = Variable<int>(pendingVersion.value);
+    }
+    if (pendingContentFormat.present) {
+      map['pending_content_format'] = Variable<int>(pendingContentFormat.value);
+    }
+    if (pendingFiles.present) {
+      map['pending_files'] = Variable<String>(pendingFiles.value);
+    }
+    if (pendingVideoSha256.present) {
+      map['pending_video_sha256'] = Variable<String>(pendingVideoSha256.value);
+    }
+    if (pendingVideoSize.present) {
+      map['pending_video_size'] = Variable<int>(pendingVideoSize.value);
+    }
+    if (pendingAttachments.present) {
+      map['pending_attachments'] = Variable<String>(pendingAttachments.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentLessonsCompanion(')
+          ..write('lessonId: $lessonId, ')
+          ..write('version: $version, ')
+          ..write('contentFormat: $contentFormat, ')
+          ..write('files: $files, ')
+          ..write('videoSha256: $videoSha256, ')
+          ..write('videoSize: $videoSize, ')
+          ..write('attachments: $attachments, ')
+          ..write('installedAt: $installedAt, ')
+          ..write('pendingVersion: $pendingVersion, ')
+          ..write('pendingContentFormat: $pendingContentFormat, ')
+          ..write('pendingFiles: $pendingFiles, ')
+          ..write('pendingVideoSha256: $pendingVideoSha256, ')
+          ..write('pendingVideoSize: $pendingVideoSize, ')
+          ..write('pendingAttachments: $pendingAttachments, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ContentBlobsTable extends ContentBlobs
+    with TableInfo<$ContentBlobsTable, ContentBlob> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ContentBlobsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _sha256Meta = const VerificationMeta('sha256');
+  @override
+  late final GeneratedColumn<String> sha256 = GeneratedColumn<String>(
+    'sha256',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sizeMeta = const VerificationMeta('size');
+  @override
+  late final GeneratedColumn<int> size = GeneratedColumn<int>(
+    'size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<BlobKind, String> kind =
+      GeneratedColumn<String>(
+        'kind',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<BlobKind>($ContentBlobsTable.$converterkind);
+  static const VerificationMeta _verifiedAtMeta = const VerificationMeta(
+    'verifiedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> verifiedAt = GeneratedColumn<DateTime>(
+    'verified_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [sha256, size, kind, verifiedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'content_blobs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ContentBlob> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('sha256')) {
+      context.handle(
+        _sha256Meta,
+        sha256.isAcceptableOrUnknown(data['sha256']!, _sha256Meta),
+      );
+    } else if (isInserting) {
+      context.missing(_sha256Meta);
+    }
+    if (data.containsKey('size')) {
+      context.handle(
+        _sizeMeta,
+        size.isAcceptableOrUnknown(data['size']!, _sizeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sizeMeta);
+    }
+    if (data.containsKey('verified_at')) {
+      context.handle(
+        _verifiedAtMeta,
+        verifiedAt.isAcceptableOrUnknown(data['verified_at']!, _verifiedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_verifiedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {sha256};
+  @override
+  ContentBlob map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ContentBlob(
+      sha256: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sha256'],
+      )!,
+      size: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}size'],
+      )!,
+      kind: $ContentBlobsTable.$converterkind.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}kind'],
+        )!,
+      ),
+      verifiedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}verified_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ContentBlobsTable createAlias(String alias) {
+    return $ContentBlobsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<BlobKind, String, String> $converterkind =
+      const EnumNameConverter<BlobKind>(BlobKind.values);
+}
+
+class ContentBlob extends DataClass implements Insertable<ContentBlob> {
+  final String sha256;
+  final int size;
+  final BlobKind kind;
+  final DateTime verifiedAt;
+  const ContentBlob({
+    required this.sha256,
+    required this.size,
+    required this.kind,
+    required this.verifiedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['sha256'] = Variable<String>(sha256);
+    map['size'] = Variable<int>(size);
+    {
+      map['kind'] = Variable<String>(
+        $ContentBlobsTable.$converterkind.toSql(kind),
+      );
+    }
+    map['verified_at'] = Variable<DateTime>(verifiedAt);
+    return map;
+  }
+
+  ContentBlobsCompanion toCompanion(bool nullToAbsent) {
+    return ContentBlobsCompanion(
+      sha256: Value(sha256),
+      size: Value(size),
+      kind: Value(kind),
+      verifiedAt: Value(verifiedAt),
+    );
+  }
+
+  factory ContentBlob.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ContentBlob(
+      sha256: serializer.fromJson<String>(json['sha256']),
+      size: serializer.fromJson<int>(json['size']),
+      kind: $ContentBlobsTable.$converterkind.fromJson(
+        serializer.fromJson<String>(json['kind']),
+      ),
+      verifiedAt: serializer.fromJson<DateTime>(json['verifiedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'sha256': serializer.toJson<String>(sha256),
+      'size': serializer.toJson<int>(size),
+      'kind': serializer.toJson<String>(
+        $ContentBlobsTable.$converterkind.toJson(kind),
+      ),
+      'verifiedAt': serializer.toJson<DateTime>(verifiedAt),
+    };
+  }
+
+  ContentBlob copyWith({
+    String? sha256,
+    int? size,
+    BlobKind? kind,
+    DateTime? verifiedAt,
+  }) => ContentBlob(
+    sha256: sha256 ?? this.sha256,
+    size: size ?? this.size,
+    kind: kind ?? this.kind,
+    verifiedAt: verifiedAt ?? this.verifiedAt,
+  );
+  ContentBlob copyWithCompanion(ContentBlobsCompanion data) {
+    return ContentBlob(
+      sha256: data.sha256.present ? data.sha256.value : this.sha256,
+      size: data.size.present ? data.size.value : this.size,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      verifiedAt: data.verifiedAt.present
+          ? data.verifiedAt.value
+          : this.verifiedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentBlob(')
+          ..write('sha256: $sha256, ')
+          ..write('size: $size, ')
+          ..write('kind: $kind, ')
+          ..write('verifiedAt: $verifiedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(sha256, size, kind, verifiedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ContentBlob &&
+          other.sha256 == this.sha256 &&
+          other.size == this.size &&
+          other.kind == this.kind &&
+          other.verifiedAt == this.verifiedAt);
+}
+
+class ContentBlobsCompanion extends UpdateCompanion<ContentBlob> {
+  final Value<String> sha256;
+  final Value<int> size;
+  final Value<BlobKind> kind;
+  final Value<DateTime> verifiedAt;
+  final Value<int> rowid;
+  const ContentBlobsCompanion({
+    this.sha256 = const Value.absent(),
+    this.size = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.verifiedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ContentBlobsCompanion.insert({
+    required String sha256,
+    required int size,
+    required BlobKind kind,
+    required DateTime verifiedAt,
+    this.rowid = const Value.absent(),
+  }) : sha256 = Value(sha256),
+       size = Value(size),
+       kind = Value(kind),
+       verifiedAt = Value(verifiedAt);
+  static Insertable<ContentBlob> custom({
+    Expression<String>? sha256,
+    Expression<int>? size,
+    Expression<String>? kind,
+    Expression<DateTime>? verifiedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (sha256 != null) 'sha256': sha256,
+      if (size != null) 'size': size,
+      if (kind != null) 'kind': kind,
+      if (verifiedAt != null) 'verified_at': verifiedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ContentBlobsCompanion copyWith({
+    Value<String>? sha256,
+    Value<int>? size,
+    Value<BlobKind>? kind,
+    Value<DateTime>? verifiedAt,
+    Value<int>? rowid,
+  }) {
+    return ContentBlobsCompanion(
+      sha256: sha256 ?? this.sha256,
+      size: size ?? this.size,
+      kind: kind ?? this.kind,
+      verifiedAt: verifiedAt ?? this.verifiedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (sha256.present) {
+      map['sha256'] = Variable<String>(sha256.value);
+    }
+    if (size.present) {
+      map['size'] = Variable<int>(size.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(
+        $ContentBlobsTable.$converterkind.toSql(kind.value),
+      );
+    }
+    if (verifiedAt.present) {
+      map['verified_at'] = Variable<DateTime>(verifiedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentBlobsCompanion(')
+          ..write('sha256: $sha256, ')
+          ..write('size: $size, ')
+          ..write('kind: $kind, ')
+          ..write('verifiedAt: $verifiedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ContentDownloadsTable extends ContentDownloads
+    with TableInfo<$ContentDownloadsTable, ContentDownload> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ContentDownloadsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _sha256Meta = const VerificationMeta('sha256');
+  @override
+  late final GeneratedColumn<String> sha256 = GeneratedColumn<String>(
+    'sha256',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sizeMeta = const VerificationMeta('size');
+  @override
+  late final GeneratedColumn<int> size = GeneratedColumn<int>(
+    'size',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<BlobKind, String> kind =
+      GeneratedColumn<String>(
+        'kind',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<BlobKind>($ContentDownloadsTable.$converterkind);
+  static const VerificationMeta _priorityMeta = const VerificationMeta(
+    'priority',
+  );
+  @override
+  late final GeneratedColumn<int> priority = GeneratedColumn<int>(
+    'priority',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _receivedMeta = const VerificationMeta(
+    'received',
+  );
+  @override
+  late final GeneratedColumn<int> received = GeneratedColumn<int>(
+    'received',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _failuresMeta = const VerificationMeta(
+    'failures',
+  );
+  @override
+  late final GeneratedColumn<int> failures = GeneratedColumn<int>(
+    'failures',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _lastErrorMeta = const VerificationMeta(
+    'lastError',
+  );
+  @override
+  late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
+    'last_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    sha256,
+    size,
+    kind,
+    priority,
+    received,
+    failures,
+    lastError,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'content_downloads';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ContentDownload> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('sha256')) {
+      context.handle(
+        _sha256Meta,
+        sha256.isAcceptableOrUnknown(data['sha256']!, _sha256Meta),
+      );
+    } else if (isInserting) {
+      context.missing(_sha256Meta);
+    }
+    if (data.containsKey('size')) {
+      context.handle(
+        _sizeMeta,
+        size.isAcceptableOrUnknown(data['size']!, _sizeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sizeMeta);
+    }
+    if (data.containsKey('priority')) {
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_priorityMeta);
+    }
+    if (data.containsKey('received')) {
+      context.handle(
+        _receivedMeta,
+        received.isAcceptableOrUnknown(data['received']!, _receivedMeta),
+      );
+    }
+    if (data.containsKey('failures')) {
+      context.handle(
+        _failuresMeta,
+        failures.isAcceptableOrUnknown(data['failures']!, _failuresMeta),
+      );
+    }
+    if (data.containsKey('last_error')) {
+      context.handle(
+        _lastErrorMeta,
+        lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {sha256};
+  @override
+  ContentDownload map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ContentDownload(
+      sha256: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sha256'],
+      )!,
+      size: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}size'],
+      )!,
+      kind: $ContentDownloadsTable.$converterkind.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}kind'],
+        )!,
+      ),
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}priority'],
+      )!,
+      received: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}received'],
+      )!,
+      failures: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}failures'],
+      )!,
+      lastError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_error'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ContentDownloadsTable createAlias(String alias) {
+    return $ContentDownloadsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<BlobKind, String, String> $converterkind =
+      const EnumNameConverter<BlobKind>(BlobKind.values);
+}
+
+class ContentDownload extends DataClass implements Insertable<ContentDownload> {
+  final String sha256;
+
+  /// الحجم المكتوب في الفهرس، وهو حد أعلى: ما يتجاوزه يُرفض.
+  final int size;
+  final BlobKind kind;
+
+  /// الأصغر أولًا: 0 الكتالوج، 1 الوحدة الحالية، 2 بقية الدروس، 3 الفيديو.
+  final int priority;
+
+  /// بايتات مكتوبة في `blobs/<sha256>.part` (من هنا يكمل التنزيل).
+  final int received;
+
+  /// محاولات انتهت بملف تالف. بعد 3 يتوقف هذا الملف حتى الفهرس التالي.
+  final int failures;
+  final String? lastError;
+  final DateTime createdAt;
+  const ContentDownload({
+    required this.sha256,
+    required this.size,
+    required this.kind,
+    required this.priority,
+    required this.received,
+    required this.failures,
+    this.lastError,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['sha256'] = Variable<String>(sha256);
+    map['size'] = Variable<int>(size);
+    {
+      map['kind'] = Variable<String>(
+        $ContentDownloadsTable.$converterkind.toSql(kind),
+      );
+    }
+    map['priority'] = Variable<int>(priority);
+    map['received'] = Variable<int>(received);
+    map['failures'] = Variable<int>(failures);
+    if (!nullToAbsent || lastError != null) {
+      map['last_error'] = Variable<String>(lastError);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  ContentDownloadsCompanion toCompanion(bool nullToAbsent) {
+    return ContentDownloadsCompanion(
+      sha256: Value(sha256),
+      size: Value(size),
+      kind: Value(kind),
+      priority: Value(priority),
+      received: Value(received),
+      failures: Value(failures),
+      lastError: lastError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastError),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory ContentDownload.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ContentDownload(
+      sha256: serializer.fromJson<String>(json['sha256']),
+      size: serializer.fromJson<int>(json['size']),
+      kind: $ContentDownloadsTable.$converterkind.fromJson(
+        serializer.fromJson<String>(json['kind']),
+      ),
+      priority: serializer.fromJson<int>(json['priority']),
+      received: serializer.fromJson<int>(json['received']),
+      failures: serializer.fromJson<int>(json['failures']),
+      lastError: serializer.fromJson<String?>(json['lastError']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'sha256': serializer.toJson<String>(sha256),
+      'size': serializer.toJson<int>(size),
+      'kind': serializer.toJson<String>(
+        $ContentDownloadsTable.$converterkind.toJson(kind),
+      ),
+      'priority': serializer.toJson<int>(priority),
+      'received': serializer.toJson<int>(received),
+      'failures': serializer.toJson<int>(failures),
+      'lastError': serializer.toJson<String?>(lastError),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  ContentDownload copyWith({
+    String? sha256,
+    int? size,
+    BlobKind? kind,
+    int? priority,
+    int? received,
+    int? failures,
+    Value<String?> lastError = const Value.absent(),
+    DateTime? createdAt,
+  }) => ContentDownload(
+    sha256: sha256 ?? this.sha256,
+    size: size ?? this.size,
+    kind: kind ?? this.kind,
+    priority: priority ?? this.priority,
+    received: received ?? this.received,
+    failures: failures ?? this.failures,
+    lastError: lastError.present ? lastError.value : this.lastError,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  ContentDownload copyWithCompanion(ContentDownloadsCompanion data) {
+    return ContentDownload(
+      sha256: data.sha256.present ? data.sha256.value : this.sha256,
+      size: data.size.present ? data.size.value : this.size,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      priority: data.priority.present ? data.priority.value : this.priority,
+      received: data.received.present ? data.received.value : this.received,
+      failures: data.failures.present ? data.failures.value : this.failures,
+      lastError: data.lastError.present ? data.lastError.value : this.lastError,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentDownload(')
+          ..write('sha256: $sha256, ')
+          ..write('size: $size, ')
+          ..write('kind: $kind, ')
+          ..write('priority: $priority, ')
+          ..write('received: $received, ')
+          ..write('failures: $failures, ')
+          ..write('lastError: $lastError, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    sha256,
+    size,
+    kind,
+    priority,
+    received,
+    failures,
+    lastError,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ContentDownload &&
+          other.sha256 == this.sha256 &&
+          other.size == this.size &&
+          other.kind == this.kind &&
+          other.priority == this.priority &&
+          other.received == this.received &&
+          other.failures == this.failures &&
+          other.lastError == this.lastError &&
+          other.createdAt == this.createdAt);
+}
+
+class ContentDownloadsCompanion extends UpdateCompanion<ContentDownload> {
+  final Value<String> sha256;
+  final Value<int> size;
+  final Value<BlobKind> kind;
+  final Value<int> priority;
+  final Value<int> received;
+  final Value<int> failures;
+  final Value<String?> lastError;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const ContentDownloadsCompanion({
+    this.sha256 = const Value.absent(),
+    this.size = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.received = const Value.absent(),
+    this.failures = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ContentDownloadsCompanion.insert({
+    required String sha256,
+    required int size,
+    required BlobKind kind,
+    required int priority,
+    this.received = const Value.absent(),
+    this.failures = const Value.absent(),
+    this.lastError = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : sha256 = Value(sha256),
+       size = Value(size),
+       kind = Value(kind),
+       priority = Value(priority),
+       createdAt = Value(createdAt);
+  static Insertable<ContentDownload> custom({
+    Expression<String>? sha256,
+    Expression<int>? size,
+    Expression<String>? kind,
+    Expression<int>? priority,
+    Expression<int>? received,
+    Expression<int>? failures,
+    Expression<String>? lastError,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (sha256 != null) 'sha256': sha256,
+      if (size != null) 'size': size,
+      if (kind != null) 'kind': kind,
+      if (priority != null) 'priority': priority,
+      if (received != null) 'received': received,
+      if (failures != null) 'failures': failures,
+      if (lastError != null) 'last_error': lastError,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ContentDownloadsCompanion copyWith({
+    Value<String>? sha256,
+    Value<int>? size,
+    Value<BlobKind>? kind,
+    Value<int>? priority,
+    Value<int>? received,
+    Value<int>? failures,
+    Value<String?>? lastError,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return ContentDownloadsCompanion(
+      sha256: sha256 ?? this.sha256,
+      size: size ?? this.size,
+      kind: kind ?? this.kind,
+      priority: priority ?? this.priority,
+      received: received ?? this.received,
+      failures: failures ?? this.failures,
+      lastError: lastError ?? this.lastError,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (sha256.present) {
+      map['sha256'] = Variable<String>(sha256.value);
+    }
+    if (size.present) {
+      map['size'] = Variable<int>(size.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(
+        $ContentDownloadsTable.$converterkind.toSql(kind.value),
+      );
+    }
+    if (priority.present) {
+      map['priority'] = Variable<int>(priority.value);
+    }
+    if (received.present) {
+      map['received'] = Variable<int>(received.value);
+    }
+    if (failures.present) {
+      map['failures'] = Variable<int>(failures.value);
+    }
+    if (lastError.present) {
+      map['last_error'] = Variable<String>(lastError.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentDownloadsCompanion(')
+          ..write('sha256: $sha256, ')
+          ..write('size: $size, ')
+          ..write('kind: $kind, ')
+          ..write('priority: $priority, ')
+          ..write('received: $received, ')
+          ..write('failures: $failures, ')
+          ..write('lastError: $lastError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3162,12 +5890,21 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $OwnedItemsTable ownedItems = $OwnedItemsTable(this);
   late final $AttemptsTable attempts = $AttemptsTable(this);
   late final $ConceptMasteryTable conceptMastery = $ConceptMasteryTable(this);
-  late final $SyncQueueTable syncQueue = $SyncQueueTable(this);
+  late final $BookmarksTable bookmarks = $BookmarksTable(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
+  late final $ContentManifestsTable contentManifests = $ContentManifestsTable(
+    this,
+  );
+  late final $ContentLessonsTable contentLessons = $ContentLessonsTable(this);
+  late final $ContentBlobsTable contentBlobs = $ContentBlobsTable(this);
+  late final $ContentDownloadsTable contentDownloads = $ContentDownloadsTable(
+    this,
+  );
   late final ProfilesDao profilesDao = ProfilesDao(this as AppDatabase);
   late final ActivityDao activityDao = ActivityDao(this as AppDatabase);
   late final SettingsDao settingsDao = SettingsDao(this as AppDatabase);
   late final WardrobeDao wardrobeDao = WardrobeDao(this as AppDatabase);
+  late final ContentDao contentDao = ContentDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3179,8 +5916,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     ownedItems,
     attempts,
     conceptMastery,
-    syncQueue,
+    bookmarks,
     appSettings,
+    contentManifests,
+    contentLessons,
+    contentBlobs,
+    contentDownloads,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -3219,6 +5960,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       ),
       result: [TableUpdate('concept_mastery', kind: UpdateKind.delete)],
     ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'profiles',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('bookmarks', kind: UpdateKind.delete)],
+    ),
   ]);
 }
 
@@ -3232,8 +5980,12 @@ typedef $$ProfilesTableCreateCompanionBuilder =
       Value<String?> pinSalt,
       required String studentCode,
       Value<String?> classCode,
+      Value<String> equipped,
       required DateTime createdAt,
       required DateTime lastActiveAt,
+      Value<int> revision,
+      Value<int> localVersion,
+      Value<DateTime?> syncedAt,
       Value<int> rowid,
     });
 typedef $$ProfilesTableUpdateCompanionBuilder =
@@ -3246,8 +5998,12 @@ typedef $$ProfilesTableUpdateCompanionBuilder =
       Value<String?> pinSalt,
       Value<String> studentCode,
       Value<String?> classCode,
+      Value<String> equipped,
       Value<DateTime> createdAt,
       Value<DateTime> lastActiveAt,
+      Value<int> revision,
+      Value<int> localVersion,
+      Value<DateTime?> syncedAt,
       Value<int> rowid,
     });
 
@@ -3357,6 +6113,24 @@ final class $$ProfilesTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$BookmarksTable, List<Bookmark>>
+  _bookmarksRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.bookmarks,
+    aliasName: $_aliasNameGenerator(db.profiles.id, db.bookmarks.profileId),
+  );
+
+  $$BookmarksTableProcessedTableManager get bookmarksRefs {
+    final manager = $$BookmarksTableTableManager(
+      $_db,
+      $_db.bookmarks,
+    ).filter((f) => f.profileId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_bookmarksRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$ProfilesTableFilterComposer
@@ -3409,6 +6183,11 @@ class $$ProfilesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get equipped => $composableBuilder(
+    column: $table.equipped,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
@@ -3416,6 +6195,21 @@ class $$ProfilesTableFilterComposer
 
   ColumnFilters<DateTime> get lastActiveAt => $composableBuilder(
     column: $table.lastActiveAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get localVersion => $composableBuilder(
+    column: $table.localVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3543,6 +6337,31 @@ class $$ProfilesTableFilterComposer
     );
     return f(composer);
   }
+
+  Expression<bool> bookmarksRefs(
+    Expression<bool> Function($$BookmarksTableFilterComposer f) f,
+  ) {
+    final $$BookmarksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.bookmarks,
+      getReferencedColumn: (t) => t.profileId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BookmarksTableFilterComposer(
+            $db: $db,
+            $table: $db.bookmarks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ProfilesTableOrderingComposer
@@ -3594,6 +6413,11 @@ class $$ProfilesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get equipped => $composableBuilder(
+    column: $table.equipped,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -3601,6 +6425,21 @@ class $$ProfilesTableOrderingComposer
 
   ColumnOrderings<DateTime> get lastActiveAt => $composableBuilder(
     column: $table.lastActiveAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localVersion => $composableBuilder(
+    column: $table.localVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -3640,6 +6479,9 @@ class $$ProfilesTableAnnotationComposer
   GeneratedColumn<String> get classCode =>
       $composableBuilder(column: $table.classCode, builder: (column) => column);
 
+  GeneratedColumn<String> get equipped =>
+      $composableBuilder(column: $table.equipped, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -3647,6 +6489,17 @@ class $$ProfilesTableAnnotationComposer
     column: $table.lastActiveAt,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get revision =>
+      $composableBuilder(column: $table.revision, builder: (column) => column);
+
+  GeneratedColumn<int> get localVersion => $composableBuilder(
+    column: $table.localVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
 
   Expression<T> lessonProgressRefs<T extends Object>(
     Expression<T> Function($$LessonProgressTableAnnotationComposer a) f,
@@ -3773,6 +6626,31 @@ class $$ProfilesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> bookmarksRefs<T extends Object>(
+    Expression<T> Function($$BookmarksTableAnnotationComposer a) f,
+  ) {
+    final $$BookmarksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.bookmarks,
+      getReferencedColumn: (t) => t.profileId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BookmarksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.bookmarks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ProfilesTableTableManager
@@ -3794,6 +6672,7 @@ class $$ProfilesTableTableManager
             bool ownedItemsRefs,
             bool attemptsRefs,
             bool conceptMasteryRefs,
+            bool bookmarksRefs,
           })
         > {
   $$ProfilesTableTableManager(_$AppDatabase db, $ProfilesTable table)
@@ -3817,8 +6696,12 @@ class $$ProfilesTableTableManager
                 Value<String?> pinSalt = const Value.absent(),
                 Value<String> studentCode = const Value.absent(),
                 Value<String?> classCode = const Value.absent(),
+                Value<String> equipped = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> lastActiveAt = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                Value<int> localVersion = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ProfilesCompanion(
                 id: id,
@@ -3829,8 +6712,12 @@ class $$ProfilesTableTableManager
                 pinSalt: pinSalt,
                 studentCode: studentCode,
                 classCode: classCode,
+                equipped: equipped,
                 createdAt: createdAt,
                 lastActiveAt: lastActiveAt,
+                revision: revision,
+                localVersion: localVersion,
+                syncedAt: syncedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3843,8 +6730,12 @@ class $$ProfilesTableTableManager
                 Value<String?> pinSalt = const Value.absent(),
                 required String studentCode,
                 Value<String?> classCode = const Value.absent(),
+                Value<String> equipped = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime lastActiveAt,
+                Value<int> revision = const Value.absent(),
+                Value<int> localVersion = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ProfilesCompanion.insert(
                 id: id,
@@ -3855,8 +6746,12 @@ class $$ProfilesTableTableManager
                 pinSalt: pinSalt,
                 studentCode: studentCode,
                 classCode: classCode,
+                equipped: equipped,
                 createdAt: createdAt,
                 lastActiveAt: lastActiveAt,
+                revision: revision,
+                localVersion: localVersion,
+                syncedAt: syncedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -3874,6 +6769,7 @@ class $$ProfilesTableTableManager
                 ownedItemsRefs = false,
                 attemptsRefs = false,
                 conceptMasteryRefs = false,
+                bookmarksRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -3883,6 +6779,7 @@ class $$ProfilesTableTableManager
                     if (ownedItemsRefs) db.ownedItems,
                     if (attemptsRefs) db.attempts,
                     if (conceptMasteryRefs) db.conceptMastery,
+                    if (bookmarksRefs) db.bookmarks,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -3992,6 +6889,27 @@ class $$ProfilesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (bookmarksRefs)
+                        await $_getPrefetchedData<
+                          Profile,
+                          $ProfilesTable,
+                          Bookmark
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ProfilesTableReferences
+                              ._bookmarksRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ProfilesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).bookmarksRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.profileId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -4018,6 +6936,7 @@ typedef $$ProfilesTableProcessedTableManager =
         bool ownedItemsRefs,
         bool attemptsRefs,
         bool conceptMasteryRefs,
+        bool bookmarksRefs,
       })
     >;
 typedef $$LessonProgressTableCreateCompanionBuilder =
@@ -4358,6 +7277,7 @@ typedef $$LessonPartProgressTableCreateCompanionBuilder =
       required String lessonId,
       required LessonPart part,
       required DateTime completedAt,
+      Value<DateTime?> syncedAt,
       Value<int> rowid,
     });
 typedef $$LessonPartProgressTableUpdateCompanionBuilder =
@@ -4366,6 +7286,7 @@ typedef $$LessonPartProgressTableUpdateCompanionBuilder =
       Value<String> lessonId,
       Value<LessonPart> part,
       Value<DateTime> completedAt,
+      Value<DateTime?> syncedAt,
       Value<int> rowid,
     });
 
@@ -4427,6 +7348,11 @@ class $$LessonPartProgressTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$ProfilesTableFilterComposer get profileId {
     final $$ProfilesTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -4475,6 +7401,11 @@ class $$LessonPartProgressTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$ProfilesTableOrderingComposer get profileId {
     final $$ProfilesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -4518,6 +7449,9 @@ class $$LessonPartProgressTableAnnotationComposer
     column: $table.completedAt,
     builder: (column) => column,
   );
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
 
   $$ProfilesTableAnnotationComposer get profileId {
     final $$ProfilesTableAnnotationComposer composer = $composerBuilder(
@@ -4580,12 +7514,14 @@ class $$LessonPartProgressTableTableManager
                 Value<String> lessonId = const Value.absent(),
                 Value<LessonPart> part = const Value.absent(),
                 Value<DateTime> completedAt = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LessonPartProgressCompanion(
                 profileId: profileId,
                 lessonId: lessonId,
                 part: part,
                 completedAt: completedAt,
+                syncedAt: syncedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4594,12 +7530,14 @@ class $$LessonPartProgressTableTableManager
                 required String lessonId,
                 required LessonPart part,
                 required DateTime completedAt,
+                Value<DateTime?> syncedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LessonPartProgressCompanion.insert(
                 profileId: profileId,
                 lessonId: lessonId,
                 part: part,
                 completedAt: completedAt,
+                syncedAt: syncedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -4677,6 +7615,7 @@ typedef $$OwnedItemsTableCreateCompanionBuilder =
       required String itemId,
       required int cost,
       required DateTime acquiredAt,
+      Value<DateTime?> syncedAt,
       Value<int> rowid,
     });
 typedef $$OwnedItemsTableUpdateCompanionBuilder =
@@ -4685,6 +7624,7 @@ typedef $$OwnedItemsTableUpdateCompanionBuilder =
       Value<String> itemId,
       Value<int> cost,
       Value<DateTime> acquiredAt,
+      Value<DateTime?> syncedAt,
       Value<int> rowid,
     });
 
@@ -4736,6 +7676,11 @@ class $$OwnedItemsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$ProfilesTableFilterComposer get profileId {
     final $$ProfilesTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -4784,6 +7729,11 @@ class $$OwnedItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$ProfilesTableOrderingComposer get profileId {
     final $$ProfilesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -4827,6 +7777,9 @@ class $$OwnedItemsTableAnnotationComposer
     column: $table.acquiredAt,
     builder: (column) => column,
   );
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
 
   $$ProfilesTableAnnotationComposer get profileId {
     final $$ProfilesTableAnnotationComposer composer = $composerBuilder(
@@ -4884,12 +7837,14 @@ class $$OwnedItemsTableTableManager
                 Value<String> itemId = const Value.absent(),
                 Value<int> cost = const Value.absent(),
                 Value<DateTime> acquiredAt = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => OwnedItemsCompanion(
                 profileId: profileId,
                 itemId: itemId,
                 cost: cost,
                 acquiredAt: acquiredAt,
+                syncedAt: syncedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4898,12 +7853,14 @@ class $$OwnedItemsTableTableManager
                 required String itemId,
                 required int cost,
                 required DateTime acquiredAt,
+                Value<DateTime?> syncedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => OwnedItemsCompanion.insert(
                 profileId: profileId,
                 itemId: itemId,
                 cost: cost,
                 acquiredAt: acquiredAt,
+                syncedAt: syncedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -4975,7 +7932,7 @@ typedef $$OwnedItemsTableProcessedTableManager =
     >;
 typedef $$AttemptsTableCreateCompanionBuilder =
     AttemptsCompanion Function({
-      Value<int> id,
+      required String id,
       required String profileId,
       required String activityId,
       required AttemptKind kind,
@@ -4985,10 +7942,13 @@ typedef $$AttemptsTableCreateCompanionBuilder =
       Value<int> hintsUsed,
       Value<String?> detailsJson,
       required DateTime createdAt,
+      Value<DateTime?> syncedAt,
+      Value<DateTime?> serverReceivedAt,
+      Value<int> rowid,
     });
 typedef $$AttemptsTableUpdateCompanionBuilder =
     AttemptsCompanion Function({
-      Value<int> id,
+      Value<String> id,
       Value<String> profileId,
       Value<String> activityId,
       Value<AttemptKind> kind,
@@ -4998,6 +7958,9 @@ typedef $$AttemptsTableUpdateCompanionBuilder =
       Value<int> hintsUsed,
       Value<String?> detailsJson,
       Value<DateTime> createdAt,
+      Value<DateTime?> syncedAt,
+      Value<DateTime?> serverReceivedAt,
+      Value<int> rowid,
     });
 
 final class $$AttemptsTableReferences
@@ -5031,7 +7994,7 @@ class $$AttemptsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
+  ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
   );
@@ -5077,6 +8040,16 @@ class $$AttemptsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get serverReceivedAt => $composableBuilder(
+    column: $table.serverReceivedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$ProfilesTableFilterComposer get profileId {
     final $$ProfilesTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -5110,7 +8083,7 @@ class $$AttemptsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
+  ColumnOrderings<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
   );
@@ -5155,6 +8128,16 @@ class $$AttemptsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get serverReceivedAt => $composableBuilder(
+    column: $table.serverReceivedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$ProfilesTableOrderingComposer get profileId {
     final $$ProfilesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5188,7 +8171,7 @@ class $$AttemptsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
+  GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
   GeneratedColumn<String> get activityId => $composableBuilder(
@@ -5220,6 +8203,14 @@ class $$AttemptsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get serverReceivedAt => $composableBuilder(
+    column: $table.serverReceivedAt,
+    builder: (column) => column,
+  );
 
   $$ProfilesTableAnnotationComposer get profileId {
     final $$ProfilesTableAnnotationComposer composer = $composerBuilder(
@@ -5273,7 +8264,7 @@ class $$AttemptsTableTableManager
               $$AttemptsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
+                Value<String> id = const Value.absent(),
                 Value<String> profileId = const Value.absent(),
                 Value<String> activityId = const Value.absent(),
                 Value<AttemptKind> kind = const Value.absent(),
@@ -5283,6 +8274,9 @@ class $$AttemptsTableTableManager
                 Value<int> hintsUsed = const Value.absent(),
                 Value<String?> detailsJson = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<DateTime?> serverReceivedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
               }) => AttemptsCompanion(
                 id: id,
                 profileId: profileId,
@@ -5294,10 +8288,13 @@ class $$AttemptsTableTableManager
                 hintsUsed: hintsUsed,
                 detailsJson: detailsJson,
                 createdAt: createdAt,
+                syncedAt: syncedAt,
+                serverReceivedAt: serverReceivedAt,
+                rowid: rowid,
               ),
           createCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
+                required String id,
                 required String profileId,
                 required String activityId,
                 required AttemptKind kind,
@@ -5307,6 +8304,9 @@ class $$AttemptsTableTableManager
                 Value<int> hintsUsed = const Value.absent(),
                 Value<String?> detailsJson = const Value.absent(),
                 required DateTime createdAt,
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<DateTime?> serverReceivedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
               }) => AttemptsCompanion.insert(
                 id: id,
                 profileId: profileId,
@@ -5318,6 +8318,9 @@ class $$AttemptsTableTableManager
                 hintsUsed: hintsUsed,
                 detailsJson: detailsJson,
                 createdAt: createdAt,
+                syncedAt: syncedAt,
+                serverReceivedAt: serverReceivedAt,
+                rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -5698,201 +8701,345 @@ typedef $$ConceptMasteryTableProcessedTableManager =
       ConceptMasteryEntry,
       PrefetchHooks Function({bool profileId})
     >;
-typedef $$SyncQueueTableCreateCompanionBuilder =
-    SyncQueueCompanion Function({
-      Value<int> id,
-      required String entity,
-      required String payloadJson,
-      required DateTime createdAt,
-      Value<int> tries,
+typedef $$BookmarksTableCreateCompanionBuilder =
+    BookmarksCompanion Function({
+      required String profileId,
+      required String lessonId,
+      Value<DateTime?> removedAt,
+      required DateTime updatedAt,
+      Value<int> localVersion,
+      Value<DateTime?> syncedAt,
+      Value<int> rowid,
     });
-typedef $$SyncQueueTableUpdateCompanionBuilder =
-    SyncQueueCompanion Function({
-      Value<int> id,
-      Value<String> entity,
-      Value<String> payloadJson,
-      Value<DateTime> createdAt,
-      Value<int> tries,
+typedef $$BookmarksTableUpdateCompanionBuilder =
+    BookmarksCompanion Function({
+      Value<String> profileId,
+      Value<String> lessonId,
+      Value<DateTime?> removedAt,
+      Value<DateTime> updatedAt,
+      Value<int> localVersion,
+      Value<DateTime?> syncedAt,
+      Value<int> rowid,
     });
 
-class $$SyncQueueTableFilterComposer
-    extends Composer<_$AppDatabase, $SyncQueueTable> {
-  $$SyncQueueTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+final class $$BookmarksTableReferences
+    extends BaseReferences<_$AppDatabase, $BookmarksTable, Bookmark> {
+  $$BookmarksTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  ColumnFilters<String> get entity => $composableBuilder(
-    column: $table.entity,
-    builder: (column) => ColumnFilters(column),
-  );
+  static $ProfilesTable _profileIdTable(_$AppDatabase db) =>
+      db.profiles.createAlias(
+        $_aliasNameGenerator(db.bookmarks.profileId, db.profiles.id),
+      );
 
-  ColumnFilters<String> get payloadJson => $composableBuilder(
-    column: $table.payloadJson,
-    builder: (column) => ColumnFilters(column),
-  );
+  $$ProfilesTableProcessedTableManager get profileId {
+    final $_column = $_itemColumn<String>('profile_id')!;
 
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get tries => $composableBuilder(
-    column: $table.tries,
-    builder: (column) => ColumnFilters(column),
-  );
+    final manager = $$ProfilesTableTableManager(
+      $_db,
+      $_db.profiles,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_profileIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
 }
 
-class $$SyncQueueTableOrderingComposer
-    extends Composer<_$AppDatabase, $SyncQueueTable> {
-  $$SyncQueueTableOrderingComposer({
+class $$BookmarksTableFilterComposer
+    extends Composer<_$AppDatabase, $BookmarksTable> {
+  $$BookmarksTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
+  ColumnFilters<String> get lessonId => $composableBuilder(
+    column: $table.lessonId,
+    builder: (column) => ColumnFilters(column),
   );
 
-  ColumnOrderings<String> get entity => $composableBuilder(
-    column: $table.entity,
-    builder: (column) => ColumnOrderings(column),
+  ColumnFilters<DateTime> get removedAt => $composableBuilder(
+    column: $table.removedAt,
+    builder: (column) => ColumnFilters(column),
   );
 
-  ColumnOrderings<String> get payloadJson => $composableBuilder(
-    column: $table.payloadJson,
-    builder: (column) => ColumnOrderings(column),
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
   );
 
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
+  ColumnFilters<int> get localVersion => $composableBuilder(
+    column: $table.localVersion,
+    builder: (column) => ColumnFilters(column),
   );
 
-  ColumnOrderings<int> get tries => $composableBuilder(
-    column: $table.tries,
-    builder: (column) => ColumnOrderings(column),
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
   );
+
+  $$ProfilesTableFilterComposer get profileId {
+    final $$ProfilesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.profiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProfilesTableFilterComposer(
+            $db: $db,
+            $table: $db.profiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
-class $$SyncQueueTableAnnotationComposer
-    extends Composer<_$AppDatabase, $SyncQueueTable> {
-  $$SyncQueueTableAnnotationComposer({
+class $$BookmarksTableOrderingComposer
+    extends Composer<_$AppDatabase, $BookmarksTable> {
+  $$BookmarksTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
+  ColumnOrderings<String> get lessonId => $composableBuilder(
+    column: $table.lessonId,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  GeneratedColumn<String> get entity =>
-      $composableBuilder(column: $table.entity, builder: (column) => column);
+  ColumnOrderings<DateTime> get removedAt => $composableBuilder(
+    column: $table.removedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 
-  GeneratedColumn<String> get payloadJson => $composableBuilder(
-    column: $table.payloadJson,
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localVersion => $composableBuilder(
+    column: $table.localVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ProfilesTableOrderingComposer get profileId {
+    final $$ProfilesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.profiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProfilesTableOrderingComposer(
+            $db: $db,
+            $table: $db.profiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$BookmarksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $BookmarksTable> {
+  $$BookmarksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get lessonId =>
+      $composableBuilder(column: $table.lessonId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get removedAt =>
+      $composableBuilder(column: $table.removedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get localVersion => $composableBuilder(
+    column: $table.localVersion,
     builder: (column) => column,
   );
 
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
 
-  GeneratedColumn<int> get tries =>
-      $composableBuilder(column: $table.tries, builder: (column) => column);
+  $$ProfilesTableAnnotationComposer get profileId {
+    final $$ProfilesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.profileId,
+      referencedTable: $db.profiles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ProfilesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.profiles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
-class $$SyncQueueTableTableManager
+class $$BookmarksTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $SyncQueueTable,
-          SyncQueueEntry,
-          $$SyncQueueTableFilterComposer,
-          $$SyncQueueTableOrderingComposer,
-          $$SyncQueueTableAnnotationComposer,
-          $$SyncQueueTableCreateCompanionBuilder,
-          $$SyncQueueTableUpdateCompanionBuilder,
-          (
-            SyncQueueEntry,
-            BaseReferences<_$AppDatabase, $SyncQueueTable, SyncQueueEntry>,
-          ),
-          SyncQueueEntry,
-          PrefetchHooks Function()
+          $BookmarksTable,
+          Bookmark,
+          $$BookmarksTableFilterComposer,
+          $$BookmarksTableOrderingComposer,
+          $$BookmarksTableAnnotationComposer,
+          $$BookmarksTableCreateCompanionBuilder,
+          $$BookmarksTableUpdateCompanionBuilder,
+          (Bookmark, $$BookmarksTableReferences),
+          Bookmark,
+          PrefetchHooks Function({bool profileId})
         > {
-  $$SyncQueueTableTableManager(_$AppDatabase db, $SyncQueueTable table)
+  $$BookmarksTableTableManager(_$AppDatabase db, $BookmarksTable table)
     : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$SyncQueueTableFilterComposer($db: db, $table: table),
+              $$BookmarksTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$SyncQueueTableOrderingComposer($db: db, $table: table),
+              $$BookmarksTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$SyncQueueTableAnnotationComposer($db: db, $table: table),
+              $$BookmarksTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
-                Value<String> entity = const Value.absent(),
-                Value<String> payloadJson = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<int> tries = const Value.absent(),
-              }) => SyncQueueCompanion(
-                id: id,
-                entity: entity,
-                payloadJson: payloadJson,
-                createdAt: createdAt,
-                tries: tries,
+                Value<String> profileId = const Value.absent(),
+                Value<String> lessonId = const Value.absent(),
+                Value<DateTime?> removedAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> localVersion = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => BookmarksCompanion(
+                profileId: profileId,
+                lessonId: lessonId,
+                removedAt: removedAt,
+                updatedAt: updatedAt,
+                localVersion: localVersion,
+                syncedAt: syncedAt,
+                rowid: rowid,
               ),
           createCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
-                required String entity,
-                required String payloadJson,
-                required DateTime createdAt,
-                Value<int> tries = const Value.absent(),
-              }) => SyncQueueCompanion.insert(
-                id: id,
-                entity: entity,
-                payloadJson: payloadJson,
-                createdAt: createdAt,
-                tries: tries,
+                required String profileId,
+                required String lessonId,
+                Value<DateTime?> removedAt = const Value.absent(),
+                required DateTime updatedAt,
+                Value<int> localVersion = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => BookmarksCompanion.insert(
+                profileId: profileId,
+                lessonId: lessonId,
+                removedAt: removedAt,
+                updatedAt: updatedAt,
+                localVersion: localVersion,
+                syncedAt: syncedAt,
+                rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$BookmarksTableReferences(db, table, e),
+                ),
+              )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({profileId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (profileId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.profileId,
+                                referencedTable: $$BookmarksTableReferences
+                                    ._profileIdTable(db),
+                                referencedColumn: $$BookmarksTableReferences
+                                    ._profileIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ),
       );
 }
 
-typedef $$SyncQueueTableProcessedTableManager =
+typedef $$BookmarksTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $SyncQueueTable,
-      SyncQueueEntry,
-      $$SyncQueueTableFilterComposer,
-      $$SyncQueueTableOrderingComposer,
-      $$SyncQueueTableAnnotationComposer,
-      $$SyncQueueTableCreateCompanionBuilder,
-      $$SyncQueueTableUpdateCompanionBuilder,
-      (
-        SyncQueueEntry,
-        BaseReferences<_$AppDatabase, $SyncQueueTable, SyncQueueEntry>,
-      ),
-      SyncQueueEntry,
-      PrefetchHooks Function()
+      $BookmarksTable,
+      Bookmark,
+      $$BookmarksTableFilterComposer,
+      $$BookmarksTableOrderingComposer,
+      $$BookmarksTableAnnotationComposer,
+      $$BookmarksTableCreateCompanionBuilder,
+      $$BookmarksTableUpdateCompanionBuilder,
+      (Bookmark, $$BookmarksTableReferences),
+      Bookmark,
+      PrefetchHooks Function({bool profileId})
     >;
 typedef $$AppSettingsTableCreateCompanionBuilder =
     AppSettingsCompanion Function({
@@ -6033,6 +9180,1089 @@ typedef $$AppSettingsTableProcessedTableManager =
       AppSetting,
       PrefetchHooks Function()
     >;
+typedef $$ContentManifestsTableCreateCompanionBuilder =
+    ContentManifestsCompanion Function({
+      Value<int> grade,
+      required int sequence,
+      required String body,
+      Value<String?> signature,
+      Value<String?> catalogSha256,
+      Value<String?> pendingCatalogSha256,
+      required DateTime fetchedAt,
+    });
+typedef $$ContentManifestsTableUpdateCompanionBuilder =
+    ContentManifestsCompanion Function({
+      Value<int> grade,
+      Value<int> sequence,
+      Value<String> body,
+      Value<String?> signature,
+      Value<String?> catalogSha256,
+      Value<String?> pendingCatalogSha256,
+      Value<DateTime> fetchedAt,
+    });
+
+class $$ContentManifestsTableFilterComposer
+    extends Composer<_$AppDatabase, $ContentManifestsTable> {
+  $$ContentManifestsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get grade => $composableBuilder(
+    column: $table.grade,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sequence => $composableBuilder(
+    column: $table.sequence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get signature => $composableBuilder(
+    column: $table.signature,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get catalogSha256 => $composableBuilder(
+    column: $table.catalogSha256,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pendingCatalogSha256 => $composableBuilder(
+    column: $table.pendingCatalogSha256,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ContentManifestsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ContentManifestsTable> {
+  $$ContentManifestsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get grade => $composableBuilder(
+    column: $table.grade,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sequence => $composableBuilder(
+    column: $table.sequence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get signature => $composableBuilder(
+    column: $table.signature,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get catalogSha256 => $composableBuilder(
+    column: $table.catalogSha256,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pendingCatalogSha256 => $composableBuilder(
+    column: $table.pendingCatalogSha256,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ContentManifestsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ContentManifestsTable> {
+  $$ContentManifestsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get grade =>
+      $composableBuilder(column: $table.grade, builder: (column) => column);
+
+  GeneratedColumn<int> get sequence =>
+      $composableBuilder(column: $table.sequence, builder: (column) => column);
+
+  GeneratedColumn<String> get body =>
+      $composableBuilder(column: $table.body, builder: (column) => column);
+
+  GeneratedColumn<String> get signature =>
+      $composableBuilder(column: $table.signature, builder: (column) => column);
+
+  GeneratedColumn<String> get catalogSha256 => $composableBuilder(
+    column: $table.catalogSha256,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get pendingCatalogSha256 => $composableBuilder(
+    column: $table.pendingCatalogSha256,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get fetchedAt =>
+      $composableBuilder(column: $table.fetchedAt, builder: (column) => column);
+}
+
+class $$ContentManifestsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ContentManifestsTable,
+          ContentManifest,
+          $$ContentManifestsTableFilterComposer,
+          $$ContentManifestsTableOrderingComposer,
+          $$ContentManifestsTableAnnotationComposer,
+          $$ContentManifestsTableCreateCompanionBuilder,
+          $$ContentManifestsTableUpdateCompanionBuilder,
+          (
+            ContentManifest,
+            BaseReferences<
+              _$AppDatabase,
+              $ContentManifestsTable,
+              ContentManifest
+            >,
+          ),
+          ContentManifest,
+          PrefetchHooks Function()
+        > {
+  $$ContentManifestsTableTableManager(
+    _$AppDatabase db,
+    $ContentManifestsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ContentManifestsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ContentManifestsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ContentManifestsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> grade = const Value.absent(),
+                Value<int> sequence = const Value.absent(),
+                Value<String> body = const Value.absent(),
+                Value<String?> signature = const Value.absent(),
+                Value<String?> catalogSha256 = const Value.absent(),
+                Value<String?> pendingCatalogSha256 = const Value.absent(),
+                Value<DateTime> fetchedAt = const Value.absent(),
+              }) => ContentManifestsCompanion(
+                grade: grade,
+                sequence: sequence,
+                body: body,
+                signature: signature,
+                catalogSha256: catalogSha256,
+                pendingCatalogSha256: pendingCatalogSha256,
+                fetchedAt: fetchedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> grade = const Value.absent(),
+                required int sequence,
+                required String body,
+                Value<String?> signature = const Value.absent(),
+                Value<String?> catalogSha256 = const Value.absent(),
+                Value<String?> pendingCatalogSha256 = const Value.absent(),
+                required DateTime fetchedAt,
+              }) => ContentManifestsCompanion.insert(
+                grade: grade,
+                sequence: sequence,
+                body: body,
+                signature: signature,
+                catalogSha256: catalogSha256,
+                pendingCatalogSha256: pendingCatalogSha256,
+                fetchedAt: fetchedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ContentManifestsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ContentManifestsTable,
+      ContentManifest,
+      $$ContentManifestsTableFilterComposer,
+      $$ContentManifestsTableOrderingComposer,
+      $$ContentManifestsTableAnnotationComposer,
+      $$ContentManifestsTableCreateCompanionBuilder,
+      $$ContentManifestsTableUpdateCompanionBuilder,
+      (
+        ContentManifest,
+        BaseReferences<_$AppDatabase, $ContentManifestsTable, ContentManifest>,
+      ),
+      ContentManifest,
+      PrefetchHooks Function()
+    >;
+typedef $$ContentLessonsTableCreateCompanionBuilder =
+    ContentLessonsCompanion Function({
+      required String lessonId,
+      Value<int> version,
+      Value<int> contentFormat,
+      Value<String> files,
+      Value<String?> videoSha256,
+      Value<int?> videoSize,
+      Value<String?> attachments,
+      Value<DateTime?> installedAt,
+      Value<int?> pendingVersion,
+      Value<int?> pendingContentFormat,
+      Value<String?> pendingFiles,
+      Value<String?> pendingVideoSha256,
+      Value<int?> pendingVideoSize,
+      Value<String?> pendingAttachments,
+      Value<int> rowid,
+    });
+typedef $$ContentLessonsTableUpdateCompanionBuilder =
+    ContentLessonsCompanion Function({
+      Value<String> lessonId,
+      Value<int> version,
+      Value<int> contentFormat,
+      Value<String> files,
+      Value<String?> videoSha256,
+      Value<int?> videoSize,
+      Value<String?> attachments,
+      Value<DateTime?> installedAt,
+      Value<int?> pendingVersion,
+      Value<int?> pendingContentFormat,
+      Value<String?> pendingFiles,
+      Value<String?> pendingVideoSha256,
+      Value<int?> pendingVideoSize,
+      Value<String?> pendingAttachments,
+      Value<int> rowid,
+    });
+
+class $$ContentLessonsTableFilterComposer
+    extends Composer<_$AppDatabase, $ContentLessonsTable> {
+  $$ContentLessonsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get lessonId => $composableBuilder(
+    column: $table.lessonId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get contentFormat => $composableBuilder(
+    column: $table.contentFormat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get files => $composableBuilder(
+    column: $table.files,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get videoSha256 => $composableBuilder(
+    column: $table.videoSha256,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get videoSize => $composableBuilder(
+    column: $table.videoSize,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get attachments => $composableBuilder(
+    column: $table.attachments,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get installedAt => $composableBuilder(
+    column: $table.installedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pendingVersion => $composableBuilder(
+    column: $table.pendingVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pendingContentFormat => $composableBuilder(
+    column: $table.pendingContentFormat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pendingFiles => $composableBuilder(
+    column: $table.pendingFiles,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pendingVideoSha256 => $composableBuilder(
+    column: $table.pendingVideoSha256,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pendingVideoSize => $composableBuilder(
+    column: $table.pendingVideoSize,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pendingAttachments => $composableBuilder(
+    column: $table.pendingAttachments,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ContentLessonsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ContentLessonsTable> {
+  $$ContentLessonsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get lessonId => $composableBuilder(
+    column: $table.lessonId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get contentFormat => $composableBuilder(
+    column: $table.contentFormat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get files => $composableBuilder(
+    column: $table.files,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get videoSha256 => $composableBuilder(
+    column: $table.videoSha256,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get videoSize => $composableBuilder(
+    column: $table.videoSize,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get attachments => $composableBuilder(
+    column: $table.attachments,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get installedAt => $composableBuilder(
+    column: $table.installedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pendingVersion => $composableBuilder(
+    column: $table.pendingVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pendingContentFormat => $composableBuilder(
+    column: $table.pendingContentFormat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pendingFiles => $composableBuilder(
+    column: $table.pendingFiles,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pendingVideoSha256 => $composableBuilder(
+    column: $table.pendingVideoSha256,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pendingVideoSize => $composableBuilder(
+    column: $table.pendingVideoSize,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pendingAttachments => $composableBuilder(
+    column: $table.pendingAttachments,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ContentLessonsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ContentLessonsTable> {
+  $$ContentLessonsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get lessonId =>
+      $composableBuilder(column: $table.lessonId, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<int> get contentFormat => $composableBuilder(
+    column: $table.contentFormat,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get files =>
+      $composableBuilder(column: $table.files, builder: (column) => column);
+
+  GeneratedColumn<String> get videoSha256 => $composableBuilder(
+    column: $table.videoSha256,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get videoSize =>
+      $composableBuilder(column: $table.videoSize, builder: (column) => column);
+
+  GeneratedColumn<String> get attachments => $composableBuilder(
+    column: $table.attachments,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get installedAt => $composableBuilder(
+    column: $table.installedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get pendingVersion => $composableBuilder(
+    column: $table.pendingVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get pendingContentFormat => $composableBuilder(
+    column: $table.pendingContentFormat,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get pendingFiles => $composableBuilder(
+    column: $table.pendingFiles,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get pendingVideoSha256 => $composableBuilder(
+    column: $table.pendingVideoSha256,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get pendingVideoSize => $composableBuilder(
+    column: $table.pendingVideoSize,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get pendingAttachments => $composableBuilder(
+    column: $table.pendingAttachments,
+    builder: (column) => column,
+  );
+}
+
+class $$ContentLessonsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ContentLessonsTable,
+          ContentLesson,
+          $$ContentLessonsTableFilterComposer,
+          $$ContentLessonsTableOrderingComposer,
+          $$ContentLessonsTableAnnotationComposer,
+          $$ContentLessonsTableCreateCompanionBuilder,
+          $$ContentLessonsTableUpdateCompanionBuilder,
+          (
+            ContentLesson,
+            BaseReferences<_$AppDatabase, $ContentLessonsTable, ContentLesson>,
+          ),
+          ContentLesson,
+          PrefetchHooks Function()
+        > {
+  $$ContentLessonsTableTableManager(
+    _$AppDatabase db,
+    $ContentLessonsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ContentLessonsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ContentLessonsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ContentLessonsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> lessonId = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<int> contentFormat = const Value.absent(),
+                Value<String> files = const Value.absent(),
+                Value<String?> videoSha256 = const Value.absent(),
+                Value<int?> videoSize = const Value.absent(),
+                Value<String?> attachments = const Value.absent(),
+                Value<DateTime?> installedAt = const Value.absent(),
+                Value<int?> pendingVersion = const Value.absent(),
+                Value<int?> pendingContentFormat = const Value.absent(),
+                Value<String?> pendingFiles = const Value.absent(),
+                Value<String?> pendingVideoSha256 = const Value.absent(),
+                Value<int?> pendingVideoSize = const Value.absent(),
+                Value<String?> pendingAttachments = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContentLessonsCompanion(
+                lessonId: lessonId,
+                version: version,
+                contentFormat: contentFormat,
+                files: files,
+                videoSha256: videoSha256,
+                videoSize: videoSize,
+                attachments: attachments,
+                installedAt: installedAt,
+                pendingVersion: pendingVersion,
+                pendingContentFormat: pendingContentFormat,
+                pendingFiles: pendingFiles,
+                pendingVideoSha256: pendingVideoSha256,
+                pendingVideoSize: pendingVideoSize,
+                pendingAttachments: pendingAttachments,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String lessonId,
+                Value<int> version = const Value.absent(),
+                Value<int> contentFormat = const Value.absent(),
+                Value<String> files = const Value.absent(),
+                Value<String?> videoSha256 = const Value.absent(),
+                Value<int?> videoSize = const Value.absent(),
+                Value<String?> attachments = const Value.absent(),
+                Value<DateTime?> installedAt = const Value.absent(),
+                Value<int?> pendingVersion = const Value.absent(),
+                Value<int?> pendingContentFormat = const Value.absent(),
+                Value<String?> pendingFiles = const Value.absent(),
+                Value<String?> pendingVideoSha256 = const Value.absent(),
+                Value<int?> pendingVideoSize = const Value.absent(),
+                Value<String?> pendingAttachments = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContentLessonsCompanion.insert(
+                lessonId: lessonId,
+                version: version,
+                contentFormat: contentFormat,
+                files: files,
+                videoSha256: videoSha256,
+                videoSize: videoSize,
+                attachments: attachments,
+                installedAt: installedAt,
+                pendingVersion: pendingVersion,
+                pendingContentFormat: pendingContentFormat,
+                pendingFiles: pendingFiles,
+                pendingVideoSha256: pendingVideoSha256,
+                pendingVideoSize: pendingVideoSize,
+                pendingAttachments: pendingAttachments,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ContentLessonsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ContentLessonsTable,
+      ContentLesson,
+      $$ContentLessonsTableFilterComposer,
+      $$ContentLessonsTableOrderingComposer,
+      $$ContentLessonsTableAnnotationComposer,
+      $$ContentLessonsTableCreateCompanionBuilder,
+      $$ContentLessonsTableUpdateCompanionBuilder,
+      (
+        ContentLesson,
+        BaseReferences<_$AppDatabase, $ContentLessonsTable, ContentLesson>,
+      ),
+      ContentLesson,
+      PrefetchHooks Function()
+    >;
+typedef $$ContentBlobsTableCreateCompanionBuilder =
+    ContentBlobsCompanion Function({
+      required String sha256,
+      required int size,
+      required BlobKind kind,
+      required DateTime verifiedAt,
+      Value<int> rowid,
+    });
+typedef $$ContentBlobsTableUpdateCompanionBuilder =
+    ContentBlobsCompanion Function({
+      Value<String> sha256,
+      Value<int> size,
+      Value<BlobKind> kind,
+      Value<DateTime> verifiedAt,
+      Value<int> rowid,
+    });
+
+class $$ContentBlobsTableFilterComposer
+    extends Composer<_$AppDatabase, $ContentBlobsTable> {
+  $$ContentBlobsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get sha256 => $composableBuilder(
+    column: $table.sha256,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get size => $composableBuilder(
+    column: $table.size,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<BlobKind, BlobKind, String> get kind =>
+      $composableBuilder(
+        column: $table.kind,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<DateTime> get verifiedAt => $composableBuilder(
+    column: $table.verifiedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ContentBlobsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ContentBlobsTable> {
+  $$ContentBlobsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get sha256 => $composableBuilder(
+    column: $table.sha256,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get size => $composableBuilder(
+    column: $table.size,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get verifiedAt => $composableBuilder(
+    column: $table.verifiedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ContentBlobsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ContentBlobsTable> {
+  $$ContentBlobsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get sha256 =>
+      $composableBuilder(column: $table.sha256, builder: (column) => column);
+
+  GeneratedColumn<int> get size =>
+      $composableBuilder(column: $table.size, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<BlobKind, String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get verifiedAt => $composableBuilder(
+    column: $table.verifiedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$ContentBlobsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ContentBlobsTable,
+          ContentBlob,
+          $$ContentBlobsTableFilterComposer,
+          $$ContentBlobsTableOrderingComposer,
+          $$ContentBlobsTableAnnotationComposer,
+          $$ContentBlobsTableCreateCompanionBuilder,
+          $$ContentBlobsTableUpdateCompanionBuilder,
+          (
+            ContentBlob,
+            BaseReferences<_$AppDatabase, $ContentBlobsTable, ContentBlob>,
+          ),
+          ContentBlob,
+          PrefetchHooks Function()
+        > {
+  $$ContentBlobsTableTableManager(_$AppDatabase db, $ContentBlobsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ContentBlobsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ContentBlobsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ContentBlobsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> sha256 = const Value.absent(),
+                Value<int> size = const Value.absent(),
+                Value<BlobKind> kind = const Value.absent(),
+                Value<DateTime> verifiedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContentBlobsCompanion(
+                sha256: sha256,
+                size: size,
+                kind: kind,
+                verifiedAt: verifiedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String sha256,
+                required int size,
+                required BlobKind kind,
+                required DateTime verifiedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ContentBlobsCompanion.insert(
+                sha256: sha256,
+                size: size,
+                kind: kind,
+                verifiedAt: verifiedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ContentBlobsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ContentBlobsTable,
+      ContentBlob,
+      $$ContentBlobsTableFilterComposer,
+      $$ContentBlobsTableOrderingComposer,
+      $$ContentBlobsTableAnnotationComposer,
+      $$ContentBlobsTableCreateCompanionBuilder,
+      $$ContentBlobsTableUpdateCompanionBuilder,
+      (
+        ContentBlob,
+        BaseReferences<_$AppDatabase, $ContentBlobsTable, ContentBlob>,
+      ),
+      ContentBlob,
+      PrefetchHooks Function()
+    >;
+typedef $$ContentDownloadsTableCreateCompanionBuilder =
+    ContentDownloadsCompanion Function({
+      required String sha256,
+      required int size,
+      required BlobKind kind,
+      required int priority,
+      Value<int> received,
+      Value<int> failures,
+      Value<String?> lastError,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$ContentDownloadsTableUpdateCompanionBuilder =
+    ContentDownloadsCompanion Function({
+      Value<String> sha256,
+      Value<int> size,
+      Value<BlobKind> kind,
+      Value<int> priority,
+      Value<int> received,
+      Value<int> failures,
+      Value<String?> lastError,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$ContentDownloadsTableFilterComposer
+    extends Composer<_$AppDatabase, $ContentDownloadsTable> {
+  $$ContentDownloadsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get sha256 => $composableBuilder(
+    column: $table.sha256,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get size => $composableBuilder(
+    column: $table.size,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<BlobKind, BlobKind, String> get kind =>
+      $composableBuilder(
+        column: $table.kind,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get received => $composableBuilder(
+    column: $table.received,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get failures => $composableBuilder(
+    column: $table.failures,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ContentDownloadsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ContentDownloadsTable> {
+  $$ContentDownloadsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get sha256 => $composableBuilder(
+    column: $table.sha256,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get size => $composableBuilder(
+    column: $table.size,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get received => $composableBuilder(
+    column: $table.received,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get failures => $composableBuilder(
+    column: $table.failures,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ContentDownloadsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ContentDownloadsTable> {
+  $$ContentDownloadsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get sha256 =>
+      $composableBuilder(column: $table.sha256, builder: (column) => column);
+
+  GeneratedColumn<int> get size =>
+      $composableBuilder(column: $table.size, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<BlobKind, String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<int> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
+
+  GeneratedColumn<int> get received =>
+      $composableBuilder(column: $table.received, builder: (column) => column);
+
+  GeneratedColumn<int> get failures =>
+      $composableBuilder(column: $table.failures, builder: (column) => column);
+
+  GeneratedColumn<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$ContentDownloadsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ContentDownloadsTable,
+          ContentDownload,
+          $$ContentDownloadsTableFilterComposer,
+          $$ContentDownloadsTableOrderingComposer,
+          $$ContentDownloadsTableAnnotationComposer,
+          $$ContentDownloadsTableCreateCompanionBuilder,
+          $$ContentDownloadsTableUpdateCompanionBuilder,
+          (
+            ContentDownload,
+            BaseReferences<
+              _$AppDatabase,
+              $ContentDownloadsTable,
+              ContentDownload
+            >,
+          ),
+          ContentDownload,
+          PrefetchHooks Function()
+        > {
+  $$ContentDownloadsTableTableManager(
+    _$AppDatabase db,
+    $ContentDownloadsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ContentDownloadsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ContentDownloadsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ContentDownloadsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> sha256 = const Value.absent(),
+                Value<int> size = const Value.absent(),
+                Value<BlobKind> kind = const Value.absent(),
+                Value<int> priority = const Value.absent(),
+                Value<int> received = const Value.absent(),
+                Value<int> failures = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContentDownloadsCompanion(
+                sha256: sha256,
+                size: size,
+                kind: kind,
+                priority: priority,
+                received: received,
+                failures: failures,
+                lastError: lastError,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String sha256,
+                required int size,
+                required BlobKind kind,
+                required int priority,
+                Value<int> received = const Value.absent(),
+                Value<int> failures = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ContentDownloadsCompanion.insert(
+                sha256: sha256,
+                size: size,
+                kind: kind,
+                priority: priority,
+                received: received,
+                failures: failures,
+                lastError: lastError,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ContentDownloadsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ContentDownloadsTable,
+      ContentDownload,
+      $$ContentDownloadsTableFilterComposer,
+      $$ContentDownloadsTableOrderingComposer,
+      $$ContentDownloadsTableAnnotationComposer,
+      $$ContentDownloadsTableCreateCompanionBuilder,
+      $$ContentDownloadsTableUpdateCompanionBuilder,
+      (
+        ContentDownload,
+        BaseReferences<_$AppDatabase, $ContentDownloadsTable, ContentDownload>,
+      ),
+      ContentDownload,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6049,8 +10279,16 @@ class $AppDatabaseManager {
       $$AttemptsTableTableManager(_db, _db.attempts);
   $$ConceptMasteryTableTableManager get conceptMastery =>
       $$ConceptMasteryTableTableManager(_db, _db.conceptMastery);
-  $$SyncQueueTableTableManager get syncQueue =>
-      $$SyncQueueTableTableManager(_db, _db.syncQueue);
+  $$BookmarksTableTableManager get bookmarks =>
+      $$BookmarksTableTableManager(_db, _db.bookmarks);
   $$AppSettingsTableTableManager get appSettings =>
       $$AppSettingsTableTableManager(_db, _db.appSettings);
+  $$ContentManifestsTableTableManager get contentManifests =>
+      $$ContentManifestsTableTableManager(_db, _db.contentManifests);
+  $$ContentLessonsTableTableManager get contentLessons =>
+      $$ContentLessonsTableTableManager(_db, _db.contentLessons);
+  $$ContentBlobsTableTableManager get contentBlobs =>
+      $$ContentBlobsTableTableManager(_db, _db.contentBlobs);
+  $$ContentDownloadsTableTableManager get contentDownloads =>
+      $$ContentDownloadsTableTableManager(_db, _db.contentDownloads);
 }

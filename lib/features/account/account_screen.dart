@@ -107,8 +107,8 @@ class AccountScreen extends ConsumerWidget {
     WidgetRef ref,
     Profile profile,
   ) async {
-    final confirmed = await showDeleteProfileSheet(context, profile);
-    if (!confirmed || !context.mounted) return;
+    final outcome = await showDeleteProfileSheet(context, profile);
+    if (outcome == DeleteOutcome.cancelled || !context.mounted) return;
     try {
       await ref.read(profileRepositoryProvider).delete(profile.id);
     } catch (_) {
@@ -124,6 +124,8 @@ class AccountScreen extends ConsumerWidget {
     final profile = ref.watch(activeProfileProvider);
     final stars = ref.watch(starsByProfileProvider).value ?? const {};
     final prefs = ref.watch(activePrefsProvider).value ?? const ProfilePrefs();
+    final downloads =
+        ref.watch(downloadPrefsProvider).value ?? const DownloadPrefs();
     final prefsRepo = ref.read(preferencesRepositoryProvider);
 
     return Scaffold(
@@ -183,9 +185,10 @@ class AccountScreen extends ConsumerWidget {
                         onGameSounds: (v) => prefsRepo.setGameSounds(p.id, v),
                       ).fadeIn(3),
                       _StorageGroup(
-                        prefs: prefs,
-                        onWifiOnly: (v) => prefsRepo.setWifiOnly(p.id, v),
-                        onAutoVideo: (v) => prefsRepo.setAutoVideo(p.id, v),
+                        prefs: downloads,
+                        onWifiOnly: prefsRepo.setWifiOnly,
+                        onAutoVideo: prefsRepo.setAutoVideo,
+                        onAutoUpdate: prefsRepo.setAutoUpdate,
                         onManage: () => context.push(AppRoutes.downloads),
                       ).fadeIn(4),
                       _GeneralGroup(
@@ -410,12 +413,14 @@ class _StorageGroup extends StatelessWidget {
     required this.prefs,
     required this.onWifiOnly,
     required this.onAutoVideo,
+    required this.onAutoUpdate,
     required this.onManage,
   });
 
-  final ProfilePrefs prefs;
+  final DownloadPrefs prefs;
   final ValueChanged<bool> onWifiOnly;
   final ValueChanged<bool> onAutoVideo;
+  final ValueChanged<bool> onAutoUpdate;
   final VoidCallback onManage;
 
   @override
@@ -439,6 +444,14 @@ class _StorageGroup extends StatelessWidget {
           label: ArStrings.accountAutoVideo,
           value: prefs.autoVideo,
           onChanged: onAutoVideo,
+        ),
+        SettingSwitchRow(
+          icon: 'sync',
+          iconColor: AppColors.purple,
+          tint: AppColors.purpleTint,
+          label: ArStrings.accountAutoUpdate,
+          value: prefs.autoUpdate,
+          onChanged: onAutoUpdate,
         ),
         SettingRow(
           icon: 'download',

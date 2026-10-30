@@ -1,5 +1,9 @@
 library;
 
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
+
 enum QuestionKind {
   choice,
   trueFalse,
@@ -50,7 +54,11 @@ sealed class Question {
     this.hints = const [],
     this.solution = const [],
     this.explanation,
+    this.fingerprint = '',
   });
+
+  static String fingerprintOf(Map<String, dynamic> json) =>
+      sha256.convert(utf8.encode(jsonEncode(json))).toString().substring(0, 16);
 
   factory Question.fromJson(Map<String, dynamic> json) {
     final type = json['type'] as String;
@@ -66,6 +74,7 @@ sealed class Question {
         for (final s in (json['solution'] as List<dynamic>? ?? [])) '$s',
       ],
       explanation: json['explanation'] as String?,
+      fingerprint: fingerprintOf(json),
     );
     return switch (type) {
       'choice' => ChoiceQuestion._(
@@ -122,6 +131,8 @@ sealed class Question {
 
   final String? explanation;
 
+  final String fingerprint;
+
   QuestionKind get kind;
 
   bool check(Object? answer);
@@ -135,6 +146,7 @@ typedef _Base = ({
   List<String> hints,
   List<String> solution,
   String? explanation,
+  String fingerprint,
 });
 
 final class ChoiceQuestion extends Question {
@@ -147,6 +159,7 @@ final class ChoiceQuestion extends Question {
         hints: b.hints,
         solution: b.solution,
         explanation: b.explanation,
+        fingerprint: b.fingerprint,
       );
 
   final List<String> choices;
@@ -169,6 +182,7 @@ final class TrueFalseQuestion extends Question {
         hints: b.hints,
         solution: b.solution,
         explanation: b.explanation,
+        fingerprint: b.fingerprint,
       );
 
   final String statement;
@@ -195,6 +209,7 @@ final class DragDropQuestion extends Question {
          hints: b.hints,
          solution: b.solution,
          explanation: b.explanation,
+         fingerprint: b.fingerprint,
        );
 
   final String template;
@@ -244,6 +259,7 @@ final class MatchPairsQuestion extends Question {
         hints: b.hints,
         solution: b.solution,
         explanation: b.explanation,
+        fingerprint: b.fingerprint,
       );
 
   final List<MatchPair> pairs;
@@ -286,6 +302,7 @@ final class OrderQuestion extends Question {
          hints: b.hints,
          solution: b.solution,
          explanation: b.explanation,
+         fingerprint: b.fingerprint,
        );
 
   final List<OrderItem> items;
@@ -319,6 +336,7 @@ final class ListenChooseQuestion extends Question {
          hints: b.hints,
          solution: b.solution,
          explanation: b.explanation,
+         fingerprint: b.fingerprint,
        );
 
   final String word;

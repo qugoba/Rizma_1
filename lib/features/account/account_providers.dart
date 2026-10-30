@@ -6,7 +6,10 @@ import '../profiles/active_profile_provider.dart';
 import 'preferences_repository.dart';
 
 final preferencesRepositoryProvider = Provider<PreferencesRepository>((ref) {
-  return PreferencesRepository(ref.watch(appDatabaseProvider));
+  return PreferencesRepository(
+    ref.watch(appDatabaseProvider),
+    now: ref.watch(clockProvider),
+  );
 });
 
 final activePrefsProvider = StreamProvider<ProfilePrefs>((ref) async* {
@@ -18,6 +21,10 @@ final activePrefsProvider = StreamProvider<ProfilePrefs>((ref) async* {
   yield* ref.watch(preferencesRepositoryProvider).watch(id);
 });
 
+final downloadPrefsProvider = StreamProvider<DownloadPrefs>((ref) {
+  return ref.watch(preferencesRepositoryProvider).watchDownloads();
+});
+
 final bookmarksProvider = StreamProvider<Set<String>>((ref) async* {
   final id = await ref.watch(activeProfileIdProvider.future);
   if (id == null) {
@@ -27,8 +34,13 @@ final bookmarksProvider = StreamProvider<Set<String>>((ref) async* {
   yield* ref.watch(preferencesRepositoryProvider).watchBookmarks(id);
 });
 
-final pendingSyncCountProvider = StreamProvider.autoDispose<int>((ref) {
-  return ref.watch(appDatabaseProvider).activityDao.watchPendingSyncCount();
+final pendingSyncCountProvider = StreamProvider.autoDispose<int>((ref) async* {
+  final id = await ref.watch(activeProfileIdProvider.future);
+  if (id == null) {
+    yield 0;
+    return;
+  }
+  yield* ref.watch(appDatabaseProvider).activityDao.watchUnsyncedAttempts(id);
 });
 
 typedef ShareText = Future<void> Function(String text);
