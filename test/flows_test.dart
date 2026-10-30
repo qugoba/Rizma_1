@@ -90,7 +90,7 @@ void main() {
     );
 
     testWidgets(
-      '«لديك رمز طالب؟» تعرض رسالة صادقة أن الاستعادة تحتاج إنترنت',
+      '«لديك رمز طالب؟» تفتح الاستعادة، وتقول بصدق إن الخادم غير متاح بعد',
       (tester) => scenario(
         tester,
         seed: (repo) async {
@@ -99,8 +99,9 @@ void main() {
         },
         (db) async {
           await tester.tap(find.text(ArStrings.pickerRestoreTitle));
-          await tester.pump();
-          expect(find.text(ArStrings.restoreNeedsInternet), findsOneWidget);
+          await tester.pumpAndSettle();
+          expect(find.text(ArStrings.restoreTitle), findsOneWidget);
+          expect(find.text(ArStrings.restoreUnavailable), findsOneWidget);
         },
       ),
     );

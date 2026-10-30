@@ -154,15 +154,20 @@ void main() {
     );
 
     testWidgets(
-      'عدد النتائج المنتظرة يأتي من طابور المزامنة ويتحدّث',
+      'عدد النتائج المنتظرة = محاولات الطالب التي لم تُرفع بعد، ويتحدّث',
       (tester) => scenario(tester, seed: seedAnas, (db) async {
         await openCode(tester);
+        final p = (await onDb(tester, db.profilesDao.getAll)).single;
         for (var i = 0; i < 3; i++) {
           await onDb(
             tester,
-            () => db.activityDao.enqueueSync(
-              entity: 'attempt',
-              payloadJson: '{}',
+            () => db.activityDao.insertAttempt(
+              profileId: p.id,
+              activityId: 'a$i',
+              kind: AttemptKind.practice,
+              score: 1,
+              total: 1,
+              starsEarned: 0,
               now: DateTime(2026, 1, 1),
             ),
           );
@@ -384,8 +389,11 @@ void main() {
         expect(on(ArStrings.accountAutoVideo), isTrue);
         final saved = await prefsOf(tester, db);
         expect(saved.gameSounds, isFalse);
-        expect(saved.wifiOnly, isFalse);
-        expect(saved.autoVideo, isTrue);
+        final device = (await tester.runAsync(
+          () => PreferencesRepository(db).readDownloads(),
+        ))!;
+        expect(device.wifiOnly, isFalse);
+        expect(device.autoVideo, isTrue);
       }),
     );
 

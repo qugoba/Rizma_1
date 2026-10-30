@@ -32,7 +32,7 @@ void main() {
       final p = await make('أنس');
       expect(p.name, 'أنس');
       expect(p.grade, 5);
-      expect(p.studentCode, matches(RegExp(r'^RZ-[A-Z2-9]{4}$')));
+      expect(p.studentCode, matches(RegExp(r'^RZ-[A-Z2-9]{4}-[A-Z2-9]{4}$')));
       expect(p.pinHash, isNull);
       expect(await repo.readActiveId(), p.id);
     });

@@ -4,11 +4,16 @@ abstract final class AppRoutes {
   static const createStep1 = '/create/step1';
   static const createStep2 = '/create/step2';
   static const profiles = '/profiles';
+  static const restore = '/restore';
   static const pinPattern = '/pin/:id';
   static const home = '/home';
   static const account = '/account';
   static const studentCode = '/account/code';
   static const downloads = '/account/downloads';
+  static const downloadsChoose = '/account/downloads/choose';
+  static const share = '/account/downloads/share';
+  static const shareWifi = '/account/downloads/share/wifi';
+  static const receive = '/account/downloads/receive';
   static const wardrobe = '/account/wardrobe';
 
   static const subjects = '/subjects';
@@ -16,6 +21,7 @@ abstract final class AppRoutes {
   static const lessonsPattern = '/units/:unitId';
   static const lessonPattern = '/lesson/:lessonId';
   static const partPattern = '/lesson/:lessonId/:part';
+  static const lessonFilePattern = '/lesson/:lessonId/file/:index';
   static const progress = '/progress';
   static const kidsGame = '/kids/game';
   static const roundPattern = '/learn/round/:lessonId';
@@ -31,9 +37,12 @@ abstract final class AppRoutes {
 
   static String lessonPart(String lessonId, String part) =>
       '/lesson/$lessonId/$part';
+
+  static String lessonFile(String lessonId, int index) =>
+      '/lesson/$lessonId/file/$index';
   static String round(String lessonId) => '/learn/round/$lessonId';
   static String quiz(String lessonId) => '/learn/quiz/$lessonId';
-  static String result(int attemptId) => '/learn/result/$attemptId';
-  static String roundEnd(int attemptId) => '/learn/round-end/$attemptId';
+  static String result(String attemptId) => '/learn/result/$attemptId';
+  static String roundEnd(String attemptId) => '/learn/round-end/$attemptId';
   static String review(String lessonId) => '/learn/review/$lessonId';
 }

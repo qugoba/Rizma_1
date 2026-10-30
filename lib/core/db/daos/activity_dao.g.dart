@@ -10,7 +10,6 @@ mixin _$ActivityDaoMixin on DatabaseAccessor<AppDatabase> {
       attachedDatabase.lessonPartProgress;
   $AttemptsTable get attempts => attachedDatabase.attempts;
   $ConceptMasteryTable get conceptMastery => attachedDatabase.conceptMastery;
-  $SyncQueueTable get syncQueue => attachedDatabase.syncQueue;
   ActivityDaoManager get managers => ActivityDaoManager(this);
 }
 
@@ -36,6 +35,4 @@ class ActivityDaoManager {
         _db.attachedDatabase,
         _db.conceptMastery,
       );
-  $$SyncQueueTableTableManager get syncQueue =>
-      $$SyncQueueTableTableManager(_db.attachedDatabase, _db.syncQueue);
 }

@@ -21,7 +21,7 @@ import 'widgets/question_parts.dart';
 class RoundEndScreen extends ConsumerWidget {
   const RoundEndScreen({super.key, required this.attemptId});
 
-  final int attemptId;
+  final String attemptId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

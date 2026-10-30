@@ -1,4 +1,5 @@
 import '../../core/db/app_database.dart';
+import '../../core/db/daos/profiles_dao.dart';
 import 'wardrobe_items.dart';
 
 enum PurchaseResult {
@@ -18,18 +19,21 @@ class WardrobeRepository {
   final AppDatabase _db;
   final DateTime Function() _now;
 
-  static String _equippedKey(String profileId) => 'pref.$profileId.equipped';
-
   static Set<String> ownedIds(Iterable<OwnedItem> purchased) => {
     for (final i in wardrobeItems)
       if (i.isFree) i.id,
     for (final p in purchased) p.itemId,
   };
 
-  static int balance({
+  static int rawBalance({
     required int stars,
     required Iterable<OwnedItem> owned,
   }) => stars - owned.fold<int>(0, (s, o) => s + o.cost);
+
+  static int balance({
+    required int stars,
+    required Iterable<OwnedItem> owned,
+  }) => rawBalance(stars: stars, owned: owned).clamp(0, 1 << 31);
 
   static ItemState stateOf(
     WardrobeItem item, {
@@ -56,16 +60,14 @@ class WardrobeRepository {
   }
 
   Stream<Set<String>> watchEquipped(String profileId) {
-    final key = _equippedKey(profileId);
-    return _db.settingsDao.watchByPrefix(key).map((rows) {
-      final raw = rows[key];
-      return raw == null || raw.isEmpty ? <String>{} : raw.split(',').toSet();
-    });
+    return _db.profilesDao
+        .watchById(profileId)
+        .map((p) => ProfilesDao.decodeEquipped(p?.equipped ?? ''));
   }
 
   Future<Set<String>> _equipped(String profileId) async {
-    final raw = await _db.settingsDao.read(_equippedKey(profileId));
-    return raw == null || raw.isEmpty ? <String>{} : raw.split(',').toSet();
+    final p = await _db.profilesDao.getById(profileId);
+    return ProfilesDao.decodeEquipped(p?.equipped ?? '');
   }
 
   Future<bool> _lessonCompleted(String profileId) async {
@@ -86,7 +88,7 @@ class WardrobeRepository {
         return PurchaseResult.locked;
       }
       final stars = await _db.activityDao.totalStars(profileId);
-      if (balance(stars: stars, owned: owned) < item.price) {
+      if (rawBalance(stars: stars, owned: owned) < item.price) {
         return PurchaseResult.notEnoughStars;
       }
       final ok = await _db.wardrobeDao.insertPurchase(
@@ -110,7 +112,7 @@ class WardrobeRepository {
     if (!owned.contains(itemId) && !unlockedFree) return false;
     final set = await _equipped(profileId);
     if (!set.add(itemId)) set.remove(itemId);
-    await _db.settingsDao.write(_equippedKey(profileId), set.join(','));
+    await _db.profilesDao.setEquipped(profileId, set);
     return true;
   }
 

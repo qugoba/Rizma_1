@@ -11,6 +11,8 @@ class LessonPartProgress extends Table {
   TextColumn get part => textEnum<LessonPart>()();
   DateTimeColumn get completedAt => dateTime()();
 
+  DateTimeColumn get syncedAt => dateTime().nullable()();
+
   @override
   Set<Column> get primaryKey => {profileId, lessonId, part};
 }

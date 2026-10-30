@@ -45,7 +45,7 @@ final starsTotalProvider = Provider.autoDispose<int>((ref) {
 typedef LoadedAttempt = ({Attempt attempt, AttemptDetails details});
 
 final attemptDetailsProvider = FutureProvider.autoDispose
-    .family<LoadedAttempt?, int>((ref, attemptId) async {
+    .family<LoadedAttempt?, String>((ref, attemptId) async {
       final profileId = await ref.watch(activeProfileIdProvider.future);
       if (profileId == null) return null;
       return ref

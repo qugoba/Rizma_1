@@ -112,7 +112,7 @@ class _ForgotPinSheetState extends State<_ForgotPinSheet> {
   }
 
   List<Widget> _codeEntry() {
-    const maxLength = 3 + StudentCode.randomLength;
+    const maxLength = StudentCode.length;
     final borderColor = _wrongCode ? AppColors.coral : AppColors.line;
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),

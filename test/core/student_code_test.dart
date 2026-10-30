@@ -5,9 +5,10 @@ import 'package:rizma/core/utils/student_code.dart';
 
 void main() {
   group('StudentCode', () {
-    test('يولّد رمزًا بصيغة RZ-XXXX', () {
+    test('يولّد رمزًا بصيغة RZ-XXXX-XXXX', () {
       final code = StudentCode.generate(Random(1));
-      expect(code, matches(RegExp(r'^RZ-[A-Z2-9]{4}$')));
+      expect(code, matches(RegExp(r'^RZ-[A-Z2-9]{4}-[A-Z2-9]{4}$')));
+      expect(code.length, StudentCode.length);
       expect(StudentCode.isValid(code), isTrue);
     });
 
@@ -24,10 +25,18 @@ void main() {
       expect(StudentCode.isValid('RZ-ABC'), isFalse);
       expect(StudentCode.isValid('XX-ABCD'), isFalse);
       expect(StudentCode.isValid('rz-abcd'), isFalse);
+      expect(StudentCode.isValid('RZ-ABCD'), isFalse);
+      expect(StudentCode.isValid('RZ-ABCD-EFG'), isFalse);
+      expect(StudentCode.isValid('RZ-ABCD-EFGH'), isTrue);
     });
 
     test('normalize يوحّد الأحرف والمسافات', () {
-      expect(StudentCode.normalize(' rz- 7k4m '), 'RZ-7K4M');
+      expect(StudentCode.normalize(' rz-7k4m-9p2q '), 'RZ-7K4M-9P2Q');
+    });
+
+    test('normalize يضع الشرطات إن كُتب الرمز بدونها', () {
+      expect(StudentCode.normalize('rz7k4m9p2q'), 'RZ-7K4M-9P2Q');
+      expect(StudentCode.normalize('RZ 7K4M 9P2Q'), 'RZ-7K4M-9P2Q');
     });
 
     test('generateUnique يتخطى الرموز المستخدمة', () async {
