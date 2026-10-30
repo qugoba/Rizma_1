@@ -49,11 +49,68 @@ abstract final class ArProgress {
   static const installedTitle = 'المحتوى المحمّل';
   static const installedNote =
       'محتوى الدروس جزء من التطبيق، فلا حاجة إلى تنزيله ولا يمكن حذفه.';
+
+  static const installedNoteDownloads =
+      'نص الدروس يبقى على هاتفك دائمًا. يمكنك حذف الفيديو لتوفير المساحة.';
+
+  static const updatesTitle = 'تحديثات الدروس';
+  static const updatesNone = 'كل الدروس على هاتفك محدّثة.';
+  static String updatesPending(String size) => '$size بانتظار التنزيل.';
+  static const updatesRunning = 'جارٍ التنزيل…';
+  static const updatesWaitingWifi =
+      'بانتظار Wi-Fi. يمكنك التنزيل الآن عبر بيانات الهاتف.';
+  static String updatesDownloadNow(String size) => 'نزّل الآن ($size)';
+  static const updatesOffline =
+      'لا اتصال بالإنترنت. يكمل التنزيل من حيث توقف حين يعود.';
+  static const updatesStorageFull =
+      'المساحة على الهاتف ممتلئة. احذف بعض الفيديو لتوفير المساحة.';
+  static String updatesFailed(int n) => n == 1
+      ? 'تعذّر تنزيل ملف واحد، وسيُعاد لاحقًا.'
+      : 'تعذّر تنزيل $n ملفات، وسيُعاد لاحقًا.';
+  static const updatesCheck = 'ابحث عن تحديثات';
+  static const updatesChoose = 'اختر ما تنزّله';
+
+  static const chooseTitle = 'اختر ما تنزّله';
+  static const chooseKicker = 'الدروس والفيديو';
+  static const chooseLessons = 'تحديثات ودروس جديدة';
+  static const chooseVideos = 'الفيديو';
+  static const chooseFiles = 'ملفات الدروس';
+  static String chooseFilesCount(int n) => switch (n) {
+    1 => 'ملف واحد',
+    2 => 'ملفان',
+    <= 10 => '$n ملفات',
+    _ => '$n ملفًا',
+  };
+  static const chooseNew = 'درس جديد';
+  static const chooseUpdate = 'تحديث';
+  static const chooseOnPhone = 'على هاتفك';
+  static const chooseNothing =
+      'لا شيء متاح للتنزيل الآن. ابحث عن تحديثات حين يتوفّر الإنترنت.';
+  static String chooseDownload(String size) => 'نزّل المحدد ($size)';
+  static String chooseSelected(int n, String size) =>
+      n == 0 ? 'لم تختر شيئًا بعد.' : 'المحدد: $n · $size';
+  static const chooseMobileNote =
+      'أنت على بيانات الهاتف: التنزيل سيستهلك منها.';
+  static const chooseOffline = 'لا اتصال بالإنترنت الآن.';
+  static const chooseAll = 'اختر الكل';
+  static const chooseNone = 'إلغاء الكل';
+
+  static const progressPreparing = 'جارٍ التحضير…';
+  static String progressLine(int percent, String? speed, String? remaining) => [
+    '$percent٪',
+    ?speed,
+    if (remaining != null) 'باقي $remaining',
+  ].join(' · ');
+
+  static String videoRowSize(String size) => 'فيديو · $size';
+  static const videoRowDownload = 'تنزيل';
+  static const videoRowRemove = 'حذف الفيديو';
+  static String videoRowQueued(int percent) => 'يُنزَّل · $percent٪';
   static const installedEmpty = 'لا دروس محمّلة بعد.';
   static const syncTitle = 'بانتظار الاتصال';
   static String syncBody(int n) => n == 0
       ? 'كل نتائجك محفوظة على جهازك.'
-      : '${_results(n)} محفوظة على جهازك وستُرفع حين تتوفّر خدمة المزامنة.';
+      : '${_results(n)} محفوظة على جهازك وستُرفع تلقائيًا حين يتوفّر الإنترنت.';
 
   static const wardrobeTitle = 'خزانة رِزمة';
   static String wardrobeKicker(String name) => 'زيّن شخصيتك بالنجوم، يا $name';

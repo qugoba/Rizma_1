@@ -10,6 +10,8 @@ class OwnedItems extends Table {
   IntColumn get cost => integer()();
   DateTimeColumn get acquiredAt => dateTime()();
 
+  DateTimeColumn get syncedAt => dateTime().nullable()();
+
   @override
   Set<Column> get primaryKey => {profileId, itemId};
 }

@@ -3,9 +3,13 @@ import 'dart:math';
 abstract final class StudentCode {
   static const prefix = 'RZ-';
 
-  static const randomLength = 4;
+  static const randomLength = 8;
+
+  static const groupLength = 4;
 
   static const alphabet = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+
+  static const length = 12;
 
   static String generate([Random? random]) {
     final rng = random ?? Random.secure();
@@ -13,18 +17,23 @@ abstract final class StudentCode {
       randomLength,
       (_) => alphabet[rng.nextInt(alphabet.length)],
     ).join();
-    return '$prefix$body';
+    return _format(body);
   }
 
+  static String _format(String body) =>
+      '$prefix${body.substring(0, groupLength)}-${body.substring(groupLength)}';
+
   static String normalize(String input) {
+    final compact = input.replaceAll(RegExp(r'[\s-]+'), '').toUpperCase();
+    if (compact.startsWith('RZ') && compact.length == 2 + randomLength) {
+      return _format(compact.substring(2));
+    }
     return input.replaceAll(RegExp(r'\s+'), '').toUpperCase();
   }
 
   static bool isValid(String code) {
-    final pattern = RegExp(
-      '^${RegExp.escape(prefix)}[$alphabet]{$randomLength}\$',
-    );
-    return pattern.hasMatch(code);
+    final group = '[$alphabet]{$groupLength}';
+    return RegExp('^${RegExp.escape(prefix)}$group-$group\$').hasMatch(code);
   }
 
   static Future<String> generateUnique(

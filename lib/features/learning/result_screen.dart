@@ -24,7 +24,7 @@ const masteredAt = kMasteryThreshold;
 class ResultScreen extends ConsumerWidget {
   const ResultScreen({super.key, required this.attemptId});
 
-  final int attemptId;
+  final String attemptId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

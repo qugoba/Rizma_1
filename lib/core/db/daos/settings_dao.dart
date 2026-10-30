@@ -14,6 +14,14 @@ class SettingsDao extends DatabaseAccessor<AppDatabase>
 
   static String profilePrefsPrefix(String profileId) => 'pref.$profileId.';
 
+  static const devicePrefix = 'device.';
+
+  static const wifiOnlyKey = '${devicePrefix}wifiOnly';
+
+  static const autoVideoKey = '${devicePrefix}autoVideo';
+
+  static const autoUpdateKey = '${devicePrefix}autoUpdate';
+
   Future<String?> read(String key) async {
     final row = await (select(
       appSettings,

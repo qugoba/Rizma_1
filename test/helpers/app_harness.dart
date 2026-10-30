@@ -13,6 +13,8 @@ import 'package:rizma/features/content/content_providers.dart';
 import 'package:rizma/features/content/content_repository.dart';
 import 'package:rizma/features/content/speech_service.dart';
 import 'package:rizma/features/profiles/profile_repository.dart';
+import 'package:rizma/features/downloads/download_providers.dart';
+import 'package:rizma/features/sync/sync_api.dart';
 
 final String _catalogJson = File(
   'assets/content/catalog_grade5.json',
@@ -81,6 +83,8 @@ Future<void> scenario(
           ),
         ),
         speechServiceProvider.overrideWithValue(FakeSpeech()),
+        serverConfigProvider.overrideWithValue(null),
+        contentConfigProvider.overrideWithValue(null),
         ...overrides,
       ],
       child: const RizmaApp(),

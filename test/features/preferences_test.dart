@@ -22,19 +22,15 @@ void main() {
       final p = ProfilePrefs.fromMap({});
       expect(p.fontSize, FontSizeChoice.medium);
       expect(p.gameSounds, isTrue);
-      expect(p.wifiOnly, isTrue);
-      expect(p.autoVideo, isFalse);
     });
 
     test('قيمة غير مفهومة ترجع إلى الافتراضي بدل أن تفشل', () {
       final p = ProfilePrefs.fromMap({
         'fontSize': 'huge',
         'gameSounds': 'maybe',
-        'wifiOnly': '',
       });
       expect(p.fontSize, FontSizeChoice.medium);
       expect(p.gameSounds, isTrue);
-      expect(p.wifiOnly, isTrue);
     });
 
     test('مقاييس الخط', () {
@@ -48,30 +44,24 @@ void main() {
     test('ملف جديد: الافتراضيات', () async {
       final p = await prefs.read('p1');
       expect(p.gameSounds, isTrue);
-      expect(p.wifiOnly, isTrue);
-      expect(p.autoVideo, isFalse);
     });
 
     test('يحفظ كل تفضيل ويقرؤه', () async {
       await prefs.setFontSize('p1', FontSizeChoice.large);
       await prefs.setGameSounds('p1', false);
-      await prefs.setWifiOnly('p1', false);
-      await prefs.setAutoVideo('p1', true);
 
       final p = await prefs.read('p1');
       expect(p.fontSize, FontSizeChoice.large);
       expect(p.gameSounds, isFalse);
-      expect(p.wifiOnly, isFalse);
-      expect(p.autoVideo, isTrue);
     });
 
     test('التفضيلات منفصلة لكل طالب', () async {
       await prefs.setFontSize('a', FontSizeChoice.large);
-      await prefs.setAutoVideo('a', true);
+      await prefs.setGameSounds('a', false);
 
       final b = await prefs.read('b');
       expect(b.fontSize, FontSizeChoice.medium);
-      expect(b.autoVideo, isFalse);
+      expect(b.gameSounds, isTrue);
     });
 
     test('البث يتحدّث عند كل تغيير', () async {
@@ -87,8 +77,33 @@ void main() {
     });
 
     test('معرّف يبدأ بمعرّف آخر لا يتداخل معه', () async {
-      await prefs.setWifiOnly('ab', false);
-      expect((await prefs.read('a')).wifiOnly, isTrue);
+      await prefs.setGameSounds('ab', false);
+      expect((await prefs.read('a')).gameSounds, isTrue);
+    });
+  });
+
+  group('إعدادا التنزيل (للهاتف كله، ADR 002 5.4)', () {
+    test('الافتراضي: Wi-Fi فقط، والفيديو باختيار الطالب', () async {
+      final d = await prefs.readDownloads();
+      expect(d.wifiOnly, isTrue);
+      expect(d.autoVideo, isFalse);
+    });
+
+    test('يُحفظان ويُقرآن، وقيمة غير مفهومة ترجع للافتراضي', () async {
+      await prefs.setWifiOnly(false);
+      await prefs.setAutoVideo(true);
+      final d = await prefs.readDownloads();
+      expect(d.wifiOnly, isFalse);
+      expect(d.autoVideo, isTrue);
+
+      expect(DownloadPrefs.fromMap({'device.wifiOnly': 'x'}).wifiOnly, isTrue);
+    });
+
+    test('لا يختلطان بتفضيلات أي طالب', () async {
+      await prefs.setAutoVideo(true);
+      await prefs.setGameSounds('a', false);
+      expect((await prefs.read('b')).gameSounds, isTrue);
+      expect((await prefs.readDownloads()).autoVideo, isTrue);
     });
   });
 

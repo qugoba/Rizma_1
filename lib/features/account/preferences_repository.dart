@@ -15,50 +15,65 @@ class ProfilePrefs {
   const ProfilePrefs({
     this.fontSize = FontSizeChoice.medium,
     this.gameSounds = true,
-    this.wifiOnly = true,
-    this.autoVideo = false,
   });
 
   factory ProfilePrefs.fromMap(Map<String, String> raw) {
-    bool flag(String key, bool fallback) => switch (raw[key]) {
-      'true' => true,
-      'false' => false,
-      _ => fallback,
-    };
-
     const defaults = ProfilePrefs();
     return ProfilePrefs(
       fontSize: FontSizeChoice.values.firstWhere(
         (c) => c.name == raw[PreferencesRepository.fontSizeKey],
         orElse: () => defaults.fontSize,
       ),
-      gameSounds: flag(
-        PreferencesRepository.gameSoundsKey,
+      gameSounds: _flag(
+        raw[PreferencesRepository.gameSoundsKey],
         defaults.gameSounds,
       ),
-      wifiOnly: flag(PreferencesRepository.wifiOnlyKey, defaults.wifiOnly),
-      autoVideo: flag(PreferencesRepository.autoVideoKey, defaults.autoVideo),
     );
   }
 
   final FontSizeChoice fontSize;
 
   final bool gameSounds;
+}
+
+bool _flag(String? raw, bool fallback) => switch (raw) {
+  'true' => true,
+  'false' => false,
+  _ => fallback,
+};
+
+class DownloadPrefs {
+  const DownloadPrefs({
+    this.wifiOnly = true,
+    this.autoVideo = false,
+    this.autoUpdate = true,
+  });
+
+  factory DownloadPrefs.fromMap(Map<String, String> raw) {
+    const defaults = DownloadPrefs();
+    return DownloadPrefs(
+      wifiOnly: _flag(raw[SettingsDao.wifiOnlyKey], defaults.wifiOnly),
+      autoVideo: _flag(raw[SettingsDao.autoVideoKey], defaults.autoVideo),
+      autoUpdate: _flag(raw[SettingsDao.autoUpdateKey], defaults.autoUpdate),
+    );
+  }
 
   final bool wifiOnly;
 
   final bool autoVideo;
+
+  final bool autoUpdate;
 }
 
 class PreferencesRepository {
-  PreferencesRepository(this._db);
+  PreferencesRepository(this._db, {DateTime Function()? now})
+    : _now = now ?? DateTime.now;
 
   final AppDatabase _db;
+  final DateTime Function() _now;
 
   static const fontSizeKey = 'fontSize';
   static const gameSoundsKey = 'gameSounds';
-  static const wifiOnlyKey = 'wifiOnly';
-  static const autoVideoKey = 'autoVideo';
 
   static String _prefix(String profileId) =>
       SettingsDao.profilePrefsPrefix(profileId);
@@ -77,27 +92,16 @@ class PreferencesRepository {
 
   Future<ProfilePrefs> read(String profileId) => watch(profileId).first;
 
-  static const _bookmarkPart = 'bookmark.';
+  Stream<Set<String>> watchBookmarks(String profileId) =>
+      _db.profilesDao.watchBookmarks(profileId);
 
-  Stream<Set<String>> watchBookmarks(String profileId) {
-    final prefix = '${_prefix(profileId)}$_bookmarkPart';
-    return _db.settingsDao
-        .watchByPrefix(prefix)
-        .map((rows) => {for (final k in rows.keys) k.substring(prefix.length)});
-  }
-
-  Future<void> setBookmarked(
-    String profileId,
-    String lessonId,
-    bool saved,
-  ) async {
-    final key = '${_prefix(profileId)}$_bookmarkPart$lessonId';
-    if (saved) {
-      await _db.settingsDao.write(key, 'true');
-    } else {
-      await _db.settingsDao.remove(key);
-    }
-  }
+  Future<void> setBookmarked(String profileId, String lessonId, bool saved) =>
+      _db.profilesDao.setBookmark(
+        profileId: profileId,
+        lessonId: lessonId,
+        saved: saved,
+        now: _now(),
+      );
 
   Future<void> setFontSize(String profileId, FontSizeChoice choice) =>
       _write(profileId, fontSizeKey, choice.name);
@@ -105,11 +109,20 @@ class PreferencesRepository {
   Future<void> setGameSounds(String profileId, bool value) =>
       _write(profileId, gameSoundsKey, '$value');
 
-  Future<void> setWifiOnly(String profileId, bool value) =>
-      _write(profileId, wifiOnlyKey, '$value');
+  Stream<DownloadPrefs> watchDownloads() => _db.settingsDao
+      .watchByPrefix(SettingsDao.devicePrefix)
+      .map(DownloadPrefs.fromMap);
 
-  Future<void> setAutoVideo(String profileId, bool value) =>
-      _write(profileId, autoVideoKey, '$value');
+  Future<DownloadPrefs> readDownloads() => watchDownloads().first;
+
+  Future<void> setWifiOnly(bool value) =>
+      _db.settingsDao.write(SettingsDao.wifiOnlyKey, '$value');
+
+  Future<void> setAutoVideo(bool value) =>
+      _db.settingsDao.write(SettingsDao.autoVideoKey, '$value');
+
+  Future<void> setAutoUpdate(bool value) =>
+      _db.settingsDao.write(SettingsDao.autoUpdateKey, '$value');
 
   Future<void> _write(String profileId, String name, String value) {
     return _db.settingsDao.write('${_prefix(profileId)}$name', value);

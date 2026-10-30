@@ -7,7 +7,7 @@ import 'round_engine.dart';
 class RoundRecord {
   const RoundRecord({required this.attemptId, required this.earned});
 
-  final int attemptId;
+  final String attemptId;
 
   final int earned;
 }
@@ -99,6 +99,7 @@ class LearningRepository {
     required RoundMode mode,
     required List<QuestionResult> results,
     required LessonContent? content,
+    bool finished = true,
   }) {
     return _db.transaction(() async {
       final now = _now();
@@ -145,6 +146,7 @@ class LearningRepository {
           'lessonId': lessonId,
           'mode': mode.name,
           'rawStars': raw,
+          if (!finished) 'partial': true,
           'questions': [for (final r in results) r.toJson()],
           'masteryBefore': before,
           'masteryAfter': after,
@@ -153,8 +155,9 @@ class LearningRepository {
       );
 
       final passed =
-          mode == RoundMode.practice ||
-          RoundEngine.percent(results) >= quizPassPercent;
+          finished &&
+          (mode == RoundMode.practice ||
+              RoundEngine.percent(results) >= quizPassPercent);
       if (passed) {
         await completePart(
           profileId: profileId,
@@ -192,9 +195,68 @@ class LearningRepository {
     });
   }
 
+  Future<void> recomputeProgress(
+    String profileId, {
+    required Future<LessonContent?> Function(String lessonId) contentFor,
+  }) async {
+    final dao = _db.activityDao;
+    final parts = await dao.getLessonParts(profileId);
+    final byLesson = <String, List<LessonPartEntry>>{};
+    for (final p in parts) {
+      byLesson.putIfAbsent(p.lessonId, () => []).add(p);
+    }
+    final contents = {for (final id in byLesson.keys) id: await contentFor(id)};
+
+    await _db.transaction(() async {
+      final mastery = <String, double>{};
+      final masteryAt = <String, DateTime>{};
+      for (final a in await dao.getAttemptsInOrder(profileId)) {
+        final raw = a.detailsJson;
+        if (raw == null) continue;
+        for (final r in AttemptDetails.fromJson(raw).results) {
+          mastery[r.concept] = RoundEngine.nextMastery(
+            mastery[r.concept],
+            r.value,
+          );
+          masteryAt[r.concept] = a.createdAt;
+        }
+      }
+
+      await dao.clearDerived(profileId);
+      for (final e in mastery.entries) {
+        await dao.upsertMastery(
+          profileId: profileId,
+          conceptId: e.key,
+          mastery: e.value,
+          now: masteryAt[e.key]!,
+        );
+      }
+
+      for (final e in byLesson.entries) {
+        final done = {for (final p in e.value) p.part};
+        final available = contents[e.key]?.parts ?? done.toList();
+        final finished = available.where(done.contains).length;
+        final total = available.isEmpty ? 1 : available.length;
+        final fraction = (finished / total).clamp(0.0, 1.0);
+        final last = e.value
+            .map((p) => p.completedAt)
+            .reduce((x, y) => x.isAfter(y) ? x : y);
+        await dao.upsertLessonProgress(
+          profileId: profileId,
+          lessonId: e.key,
+          status: fraction >= 1
+              ? LessonStatus.completed
+              : LessonStatus.inProgress,
+          progress: fraction,
+          now: last,
+        );
+      }
+    });
+  }
+
   Future<({Attempt attempt, AttemptDetails details})?> loadAttempt(
     String profileId,
-    int attemptId,
+    String attemptId,
   ) async {
     final a = await _db.activityDao.getAttempt(profileId, attemptId);
     final raw = a?.detailsJson;

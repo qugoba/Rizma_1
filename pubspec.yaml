@@ -46,6 +46,13 @@ dependencies:
   uuid: ^4.6.0
   share_plus: ^13.3.1
   flutter_tts: ^4.2.5
+  supabase: ^2.16.5
+  http: ^1.6.0
+  cryptography: ^2.9.0
+  connectivity_plus: ^7.0.0
+  video_player: ^2.11.1
+  pdfx: ^2.11.0
+  file_picker: ^13.3.0
 
 dev_dependencies:
   flutter_test:
@@ -57,6 +64,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  video_player_platform_interface: ^6.9.0
   drift_dev: '>=2.31.0 <2.32.0'
   build_runner: ^2.4.13
 
@@ -77,6 +85,7 @@ flutter:
     - assets/icons/ui/
     - assets/content/
     - assets/content/lessons/
+    - assets/illustrations/
 
   fonts:
     - family: Cairo

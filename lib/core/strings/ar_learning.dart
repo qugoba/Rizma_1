@@ -79,7 +79,8 @@ abstract final class ArLearn {
   static const lessonOpen = 'متاح للبدء';
   static const lessonContinue = 'متابعة';
   static String lessonNumbered(int n, String title) => '$n. $title';
-  static String lessonsDoneSentence(int done, int total) => 'أنجزت $done من $total';
+  static String lessonsDoneSentence(int done, int total) =>
+      'أنجزت $done من $total';
   static const lessonNotStarted = 'لم يبدأ';
   static String lessonInProgress(int percent) => 'قيد التعلّم · $percent%';
   static const downloadUnit = 'تحميل الوحدة كاملة';
@@ -198,14 +199,37 @@ abstract final class ArLearn {
       '$lesson · ${minutesCount(minutes)}';
   static const videoUnavailable = 'الفيديو غير محمّل على هذا الجهاز.';
   static const videoUnavailableNote = 'يتوفّر مع حزمة الفيديو حين تُنزَّل.';
+  static String videoDownload(String size) => 'تنزيل الفيديو ($size)';
+  static String videoDownloading(int percent) =>
+      'جارٍ تنزيل الفيديو · $percent٪';
+  static const videoWaitingWifi =
+      'سيُنزَّل حين يتوفّر Wi-Fi، ويكمل من حيث توقف.';
+  static const videoPlayFailed = 'تعذّر تشغيل الفيديو على هذا الهاتف.';
+  static const videoWatchNow = 'شاهد الآن';
+  static const videoSkipBack = 'رجوع 10 ثوانٍ';
+  static const videoSkipForward = 'تقديم 10 ثوانٍ';
+  static const videoReplay = 'إعادة من البداية';
+  static const videoSpeedLabel = 'سرعة التشغيل';
+  static const videoFullscreen = 'ملء الشاشة';
+  static const videoExitFullscreen = 'الخروج من ملء الشاشة';
+  static const videoPosition = 'موضع الفيديو';
+  static const videoStreamNote = 'يعمل من الإنترنت. نزّله لتشاهده دون اتصال.';
+  static String videoMobileData(double mbPerMinute) =>
+      'المشاهدة على بيانات الهاتف تستهلك حوالي ${mbPerMinute.toStringAsFixed(1)} MB للدقيقة.';
+  static const videoNeedsInternet =
+      'لا اتصال الآن. شاهده حين يعود الإنترنت، أو نزّله لتشاهده دون اتصال.';
+  static const videoStreamFailed =
+      'انقطع الاتصال أثناء المشاهدة. نزّل الفيديو لتشاهده دون إنترنت.';
+  static const videoPlay = 'تشغيل';
+  static const videoPause = 'إيقاف مؤقت';
   static String videoSize(double mb) =>
       'حجم الفيديو · ${mb.toStringAsFixed(0)} MB';
   static const videoParts = 'أجزاء الفيديو';
-  static const videoSpeed = 'السرعة 1×';
   static const videoPracticeNow = 'تدرّب الآن';
   static const videoWatch = 'شاهد وتعلّم';
   static const videoHintTitle = 'رِزمة يذكّرك';
-  static const videoHintBody = 'بعد المشاهدة جرّب التدريب لتثبيت الفكرة وجمع النجوم.';
+  static const videoHintBody =
+      'بعد المشاهدة جرّب التدريب لتثبيت الفكرة وجمع النجوم.';
 
   static const roundNoQuestions = 'لا توجد أسئلة لهذا الدرس بعد.';
   static String roundQuestionOf(int n, int total) => 'سؤال $n من $total';
@@ -315,4 +339,18 @@ abstract final class ArLearn {
   static const wordsAudioReady = 'الصوت يعمل دون اتصال';
   static const wordsGame = 'لعبة «استمع واختر»';
   static const wordsGameNote = 'اسمع الكلمة واختر صورتها';
+
+  static const filesTitle = 'ملفات الدرس';
+  static const filesOnPhone = 'على الهاتف، يفتح دون إنترنت';
+  static const filesOnline = 'يفتح من الإنترنت';
+  static String filesDownloading(int percent) => 'جارٍ التنزيل · $percent٪';
+  static String filesDownload(String size) => 'تنزيل ($size)';
+  static const filesRemove = 'حذف من الهاتف';
+  static const filesOpening = 'جارٍ فتح الملف…';
+  static const filesOffline =
+      'الملف غير منزَّل ولا يوجد اتصال الآن. نزّله وأنت متصل لتفتحه دون إنترنت.';
+  static const filesFailed = 'تعذّر فتح الملف. حاول مرة أخرى.';
+  static const filesRetry = 'حاول مرة أخرى';
+  static String filesPage(int page, int? count) =>
+      count == null ? 'صفحة $page' : 'صفحة $page من $count';
 }

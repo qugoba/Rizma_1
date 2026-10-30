@@ -72,9 +72,7 @@ class WelcomeScreen extends StatelessWidget {
                 onPressed: () => context.push(AppRoutes.createStep1),
               ),
               TextButton(
-                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(ArStrings.restoreNeedsInternet)),
-                ),
+                onPressed: () => context.push(AppRoutes.restore),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.teal,
                   textStyle: AppTextStyles.label14,

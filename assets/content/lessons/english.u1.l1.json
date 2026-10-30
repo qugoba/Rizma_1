@@ -1,0 +1,596 @@
+{
+ "lessonId": "english.u1.l1",
+ "note": "من الوحدة 1 في كتاب English for Palestine 5 (الرزم التعليمية 2024). ينتظر مراجعة معلم.",
+ "pack": [
+  {
+   "header": "الإنجليزية · الصف الخامس",
+   "title": "الوحدة 1: New friends",
+   "blocks": [
+    {
+     "type": "text",
+     "value": "Ben تلميذ جديد في الصف. هو من بريطانيا، ويجلس بجانب عمر. وأخت عمر التوأم رانيا تجلس خلفه."
+    },
+    {
+     "type": "text",
+     "value": "Hi, I’m Omar. This is my sister Rania. We’re twins. We’re 11 years old."
+    },
+    {
+     "type": "text",
+     "value": "أبو بن مهندس يعمل في رام الله ويحب سباقات المشي، وأمه تساعده."
+    }
+   ]
+  },
+  {
+   "header": "ماذا يحبون أن يفعلوا؟",
+   "title": "What do you like doing?",
+   "blocks": [
+    {
+     "type": "text",
+     "value": "Ben likes drawing pictures and writing emails."
+    },
+    {
+     "type": "text",
+     "value": "Omar is good at art. He likes watching films at the cinema."
+    },
+    {
+     "type": "text",
+     "value": "Rania likes looking at cats on the internet."
+    }
+   ]
+  }
+ ],
+ "explanation": [
+  {
+   "title": "1. تعرّف على الأصدقاء",
+   "body": "Ben من بريطانيا، طالب جديد. يحب drawing pictures وwriting emails وwatching films. Omar توأم Rania، عمره 11 سنة، يحب drawing pictures وwatching films. Rania أخت Omar التوأم، تحب looking at cats on the internet.",
+   "tip": "والد Ben مهندس (engineer) يعمل في رام الله، ويحب سباقات المشي (walking races)."
+  },
+  {
+   "title": "2. كلماتي الجديدة",
+   "body": "class صف، parent أحد الوالدين، twin توأم، race سباق، work يعمل، art فن، email بريد إلكتروني، film فيلم، cinema سينما، internet الإنترنت."
+  },
+  {
+   "title": "3. قاعدة اليوم: نضيف s",
+   "body": "مع He وShe نضيف s للفعل، ومع I وWe وThey يبقى كما هو: I live ← He lives، I work ← She works، I walk ← He walks.",
+   "tip": "وI am ← He is."
+  },
+  {
+   "title": "4. أقول ماذا أحب",
+   "body": "بعد like نكتب فعلًا ينتهي بـ ing: I like drawing pictures. I like watching films. She likes looking at cats."
+  },
+  {
+   "title": "5. أحكي عن نفسي",
+   "body": "Where do you live? ← I live in … · What’s your favourite subject? ← My favourite subject is … · What do you like doing? ← I like …"
+  },
+  {
+   "title": "زيادة: النفي وhave",
+   "body": "I don’t have a car. She doesn’t have a sister. They have a car. He has a cat.",
+   "tip": "don’t مع I/We/They، وdoesn’t مع He/She، والفعل بعدها بلا s."
+  }
+ ],
+ "summary": [
+  {
+   "text": "twins يعني أخوين وُلدا معًا، مثل Omar وRania."
+  },
+  {
+   "text": "مع He وShe نضيف s للفعل: He lives و She works."
+  },
+  {
+   "text": "بعد like يأتي فعل بـ ing: I like drawing."
+  },
+  {
+   "text": "I am، He/She is، We/They are."
+  },
+  {
+   "text": "كلماتي الجديدة: internet، cinema، film، email، art، work، race، twin، parent، class."
+  }
+ ],
+ "words": [
+  {
+   "en": "internet",
+   "ar": "الإنترنت",
+   "ipa": "/ˈɪn.tə.net/",
+   "illustration": "",
+   "sentenceEn": "Rania looks at cats on the internet.",
+   "sentenceAr": "رانيا تنظر إلى القطط على الإنترنت."
+  },
+  {
+   "en": "cinema",
+   "ar": "سينما",
+   "ipa": "/ˈsɪn.ə.mə/",
+   "illustration": "",
+   "sentenceEn": "We watch films at the cinema.",
+   "sentenceAr": "نشاهد الأفلام في السينما."
+  },
+  {
+   "en": "film",
+   "ar": "فيلم",
+   "ipa": "/fɪlm/",
+   "illustration": "",
+   "sentenceEn": "I like this film.",
+   "sentenceAr": "أحب هذا الفيلم."
+  },
+  {
+   "en": "email",
+   "ar": "بريد إلكتروني",
+   "ipa": "/ˈiː.meɪl/",
+   "illustration": "",
+   "sentenceEn": "Ben likes writing emails.",
+   "sentenceAr": "بن يحب كتابة الرسائل الإلكترونية."
+  },
+  {
+   "en": "art",
+   "ar": "فن، رسم",
+   "ipa": "/ɑːt/",
+   "illustration": "",
+   "sentenceEn": "Omar is good at art.",
+   "sentenceAr": "عمر جيد في الرسم."
+  },
+  {
+   "en": "work",
+   "ar": "يعمل",
+   "ipa": "/wɜːk/",
+   "illustration": "",
+   "sentenceEn": "He works in Ramallah.",
+   "sentenceAr": "هو يعمل في رام الله."
+  },
+  {
+   "en": "race",
+   "ar": "سباق",
+   "ipa": "/reɪs/",
+   "illustration": "",
+   "sentenceEn": "Dad likes walking races.",
+   "sentenceAr": "أبي يحب سباقات المشي."
+  },
+  {
+   "en": "twin",
+   "ar": "توأم",
+   "ipa": "/twɪn/",
+   "illustration": "",
+   "sentenceEn": "Omar and Rania are twins.",
+   "sentenceAr": "عمر ورانيا توأم."
+  },
+  {
+   "en": "parent",
+   "ar": "أحد الوالدين",
+   "ipa": "/ˈpeə.rənt/",
+   "illustration": "",
+   "sentenceEn": "My parents are my mum and dad.",
+   "sentenceAr": "والداي هما أمي وأبي."
+  },
+  {
+   "en": "class",
+   "ar": "صف، فصل",
+   "ipa": "/klɑːs/",
+   "illustration": "",
+   "sentenceEn": "Ben is a new pupil in our class.",
+   "sentenceAr": "بن تلميذ جديد في صفنا."
+  }
+ ],
+ "video": {
+  "title": "الوحدة الأولى: أصدقاء جدد!",
+  "minutes": 7,
+  "sizeMb": 31.5,
+  "file": "7a85c0d0baee4b56720fdd039de01ac26eb074de83a15c2fb4bef16b09387297",
+  "parts": [
+   {
+    "title": "New friends: الدرس كاملًا",
+    "at": "0:00"
+   }
+  ]
+ },
+ "attachments": [
+  {
+   "title": "ملخص الطالب: الدرس الأول",
+   "file": "5d0f3312cc94c828f0b874715e1ce35dfd0fefe1732926f97a1078d05a0c1ae7",
+   "sizeKb": 496
+  }
+ ],
+ "practice": [
+  {
+   "id": "english.u1.l1.p1",
+   "type": "choice",
+   "concept": "english.u1.l1.c1",
+   "prompt": "ما معنى كلمة twin؟",
+   "choices": [
+    "توأم",
+    "صديق",
+    "معلم",
+    "جار"
+   ],
+   "answer": 0,
+   "hints": [
+    "عمر ورانيا عمرهما واحد ووُلدا معًا."
+   ],
+   "solution": [
+    "twin = توأم"
+   ],
+   "explanation": "twin تعني توأم."
+  },
+  {
+   "id": "english.u1.l1.p2",
+   "type": "choice",
+   "concept": "english.u1.l1.c1",
+   "prompt": "أين نشاهد الأفلام؟",
+   "choices": [
+    "cinema",
+    "class",
+    "race",
+    "email"
+   ],
+   "answer": 0,
+   "hints": [
+    "مكان فيه شاشة كبيرة."
+   ],
+   "solution": [
+    "We watch films at the cinema."
+   ],
+   "explanation": "cinema = سينما."
+  },
+  {
+   "id": "english.u1.l1.p3",
+   "type": "choice",
+   "concept": "english.u1.l1.c1",
+   "prompt": "ما معنى كلمة parents؟",
+   "choices": [
+    "الوالدان",
+    "الإخوة",
+    "الأصدقاء",
+    "المعلمون"
+   ],
+   "answer": 0,
+   "hints": [
+    "أمي وأبي."
+   ],
+   "solution": [
+    "parents = الوالدان"
+   ],
+   "explanation": "parents هما الأم والأب."
+  },
+  {
+   "id": "english.u1.l1.p4",
+   "type": "matchPairs",
+   "concept": "english.u1.l1.c1",
+   "prompt": "وصّل كل كلمة بمعناها",
+   "pairs": [
+    {
+     "left": {
+      "text": "film"
+     },
+     "right": {
+      "text": "فيلم"
+     }
+    },
+    {
+     "left": {
+      "text": "email"
+     },
+     "right": {
+      "text": "بريد إلكتروني"
+     }
+    },
+    {
+     "left": {
+      "text": "race"
+     },
+     "right": {
+      "text": "سباق"
+     }
+    },
+    {
+     "left": {
+      "text": "class"
+     },
+     "right": {
+      "text": "صف"
+     }
+    }
+   ],
+   "hints": [
+    "ابدأ بالكلمة التي تعرفها."
+   ],
+   "solution": [
+    "film = فيلم",
+    "email = بريد إلكتروني",
+    "race = سباق",
+    "class = صف"
+   ]
+  },
+  {
+   "id": "english.u1.l1.p5",
+   "type": "trueFalse",
+   "concept": "english.u1.l1.c1",
+   "prompt": "هل هذه العبارة صحيحة؟",
+   "statement": "Ben is from Palestine.",
+   "answer": false,
+   "hints": [
+    "تذكّر: I’m British."
+   ],
+   "solution": [
+    "Ben is from Britain."
+   ],
+   "explanation": "بن من بريطانيا."
+  },
+  {
+   "id": "english.u1.l1.p6",
+   "type": "trueFalse",
+   "concept": "english.u1.l1.c1",
+   "prompt": "هل هذه العبارة صحيحة؟",
+   "statement": "Omar and Rania are twins.",
+   "answer": true,
+   "hints": [
+    "We’re twins."
+   ],
+   "solution": [
+    "صحيح"
+   ],
+   "explanation": "عمر ورانيا توأم عمرهما 11 سنة."
+  },
+  {
+   "id": "english.u1.l1.p7",
+   "type": "trueFalse",
+   "concept": "english.u1.l1.c1",
+   "prompt": "هل هذه العبارة صحيحة؟",
+   "statement": "Rania likes looking at cats on the internet.",
+   "answer": true,
+   "hints": [
+    "ماذا تحب رانيا؟"
+   ],
+   "solution": [
+    "صحيح"
+   ],
+   "explanation": "صحيح."
+  },
+  {
+   "id": "english.u1.l1.p8",
+   "type": "choice",
+   "concept": "english.u1.l1.c2",
+   "prompt": "اختر الصحيح: He ____ in Ramallah.",
+   "choices": [
+    "works",
+    "work",
+    "working",
+    "are work"
+   ],
+   "answer": 0,
+   "hints": [
+    "مع He نضيف s للفعل."
+   ],
+   "solution": [
+    "He works in Ramallah."
+   ],
+   "explanation": "He + فعل + s."
+  },
+  {
+   "id": "english.u1.l1.p9",
+   "type": "choice",
+   "concept": "english.u1.l1.c2",
+   "prompt": "اختر الصحيح: I ____ in Gaza.",
+   "choices": [
+    "live",
+    "lives",
+    "is live",
+    "living"
+   ],
+   "answer": 0,
+   "hints": [
+    "مع I يبقى الفعل كما هو."
+   ],
+   "solution": [
+    "I live in Gaza."
+   ],
+   "explanation": "I + الفعل بلا s."
+  },
+  {
+   "id": "english.u1.l1.p10",
+   "type": "choice",
+   "concept": "english.u1.l1.c2",
+   "prompt": "اختر الصحيح: Omar ____ eleven years old.",
+   "choices": [
+    "is",
+    "are",
+    "am",
+    "be"
+   ],
+   "answer": 0,
+   "hints": [
+    "Omar = He"
+   ],
+   "solution": [
+    "Omar is eleven years old."
+   ],
+   "explanation": "He/She ← is."
+  },
+  {
+   "id": "english.u1.l1.p11",
+   "type": "dragDrop",
+   "concept": "english.u1.l1.c2",
+   "prompt": "اسحب الكلمة المناسبة إلى الفراغ",
+   "template": "She {?} have a sister.",
+   "cards": [
+    "doesn’t",
+    "don’t",
+    "isn’t",
+    "aren’t"
+   ],
+   "answer": "doesn’t",
+   "hints": [
+    "She مثل He: نستعمل doesn’t."
+   ],
+   "solution": [
+    "She doesn’t have a sister."
+   ],
+   "explanation": "He/She ← doesn’t."
+  },
+  {
+   "id": "english.u1.l1.p12",
+   "type": "dragDrop",
+   "concept": "english.u1.l1.c2",
+   "prompt": "اسحب الكلمة المناسبة إلى الفراغ",
+   "template": "They {?} a car.",
+   "cards": [
+    "have",
+    "has",
+    "is",
+    "does"
+   ],
+   "answer": "have",
+   "hints": [
+    "They مثل I وWe."
+   ],
+   "solution": [
+    "They have a car."
+   ],
+   "explanation": "I/We/They ← have، وHe/She ← has."
+  },
+  {
+   "id": "english.u1.l1.p13",
+   "type": "order",
+   "concept": "english.u1.l1.c2",
+   "prompt": "رتّب الكلمات لتكوين جملة",
+   "items": [
+    {
+     "label": "I"
+    },
+    {
+     "label": "like"
+    },
+    {
+     "label": "watching"
+    },
+    {
+     "label": "films"
+    }
+   ],
+   "startLabel": "أول الجملة",
+   "endLabel": "آخرها",
+   "hints": [
+    "ابدأ بـ I."
+   ],
+   "solution": [
+    "I like watching films."
+   ]
+  },
+  {
+   "id": "english.u1.l1.p14",
+   "type": "choice",
+   "concept": "english.u1.l1.c2",
+   "prompt": "What do you like doing? اختر الجواب الصحيح",
+   "choices": [
+    "I like drawing.",
+    "I like draw.",
+    "I likes drawing.",
+    "I drawing like."
+   ],
+   "answer": 0,
+   "hints": [
+    "I like + فعل + ing"
+   ],
+   "solution": [
+    "I like drawing."
+   ],
+   "explanation": "I like + ing."
+  }
+ ],
+ "quiz": [
+  {
+   "id": "english.u1.l1.q1",
+   "type": "choice",
+   "concept": "english.u1.l1.c1",
+   "prompt": "ما معنى cinema؟",
+   "choices": [
+    "سينما",
+    "صف",
+    "سباق",
+    "فيلم"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "english.u1.l1.q2",
+   "type": "choice",
+   "concept": "english.u1.l1.c1",
+   "prompt": "كيف نقول «توأم» بالإنجليزية؟",
+   "choices": [
+    "twin",
+    "parent",
+    "class",
+    "art"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "english.u1.l1.q3",
+   "type": "choice",
+   "concept": "english.u1.l1.c1",
+   "prompt": "أين يعمل أبو بن؟",
+   "choices": [
+    "Ramallah",
+    "Jerusalem",
+    "Gaza",
+    "London"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "english.u1.l1.q4",
+   "type": "trueFalse",
+   "concept": "english.u1.l1.c1",
+   "prompt": "هل هذه العبارة صحيحة؟",
+   "statement": "Ben likes writing emails.",
+   "answer": true
+  },
+  {
+   "id": "english.u1.l1.q5",
+   "type": "choice",
+   "concept": "english.u1.l1.c2",
+   "prompt": "اختر الصحيح: She ____ in Jerusalem.",
+   "choices": [
+    "lives",
+    "live",
+    "living",
+    "are live"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "english.u1.l1.q6",
+   "type": "choice",
+   "concept": "english.u1.l1.c2",
+   "prompt": "اختر الصحيح: My favourite subject ____ English.",
+   "choices": [
+    "is",
+    "are",
+    "am",
+    "do"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "english.u1.l1.q7",
+   "type": "choice",
+   "concept": "english.u1.l1.c2",
+   "prompt": "اختر الصحيح: They ____ a car.",
+   "choices": [
+    "have",
+    "has",
+    "is",
+    "does"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "english.u1.l1.q8",
+   "type": "choice",
+   "concept": "english.u1.l1.c2",
+   "prompt": "اختر الصحيح: He ____ have a brother.",
+   "choices": [
+    "doesn’t",
+    "don’t",
+    "isn’t",
+    "not"
+   ],
+   "answer": 0
+  }
+ ]
+}
