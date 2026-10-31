@@ -2,6 +2,10 @@
     <!-- المزامنة مع الخادم (ADR 001). نسختا debug وprofile تضيفانها وحدهما،
          أما نسخة الإصدار فتحتاجها هنا. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- النقل على Wi-Fi (ADR 003): معرفة عنوان الهاتف على الشبكة المحلية.
+         إذنان عاديان يُمنحان وحدهما، بلا سؤال المستخدم. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <application
         android:label="Rizma"
         android:name="${applicationName}"

@@ -13,6 +13,7 @@ abstract final class AppRoutes {
   static const downloadsChoose = '/account/downloads/choose';
   static const share = '/account/downloads/share';
   static const shareWifi = '/account/downloads/share/wifi';
+  static const shareNearby = '/account/downloads/share/nearby';
   static const receive = '/account/downloads/receive';
   static const wardrobe = '/account/wardrobe';
 

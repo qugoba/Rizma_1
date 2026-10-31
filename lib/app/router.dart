@@ -1,12 +1,16 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/account/account_screen.dart';
+import '../features/account/choose_downloads_screen.dart';
+import '../features/account/downloads_screen.dart';
 import '../features/account/student_code_screen.dart';
+import '../features/sharing/nearby_send_screen.dart';
+import '../features/sharing/receive_screen.dart';
+import '../features/sharing/send_wifi_screen.dart';
+import '../features/sharing/share_screen.dart';
 import '../features/learning/attachment_screen.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_text_styles.dart';
 import '../features/home/home_screen.dart';
 import '../features/kids/kids_game_screen.dart';
 import '../features/launch/launch_screen.dart';
@@ -29,6 +33,7 @@ import '../features/profiles/pin_entry_screen.dart';
 import '../features/progress/progress_screen.dart';
 import '../features/wardrobe/wardrobe_screen.dart';
 import '../features/profiles/profile_picker_screen.dart';
+import '../features/sync/restore_screen.dart';
 import 'page_transitions.dart';
 import 'routes.dart';
 
@@ -37,13 +42,6 @@ final routerProvider = Provider<GoRouter>((ref) {
     final active = ref.read(activeProfileIdProvider);
     return active.hasValue && active.value == null ? AppRoutes.launch : null;
   }
-
-  GoRoute later(String path) => GoRoute(
-    path: path,
-    redirect: requireActiveProfile,
-    pageBuilder: (context, state) =>
-        appPage(state: state, child: const _ComingSoonScreen()),
-  );
 
   return GoRouter(
     initialLocation: AppRoutes.launch,
@@ -86,7 +84,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           motion: PageMotion.tab,
         ),
       ),
-      later(AppRoutes.restore),
+      GoRoute(
+        path: AppRoutes.restore,
+        pageBuilder: (context, state) =>
+            appPage(state: state, child: const RestoreScreen()),
+      ),
       GoRoute(
         path: AppRoutes.pinPattern,
         pageBuilder: (context, state) => appPage(
@@ -130,11 +132,42 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) =>
             appPage(state: state, child: const StudentCodeScreen()),
       ),
-      later(AppRoutes.downloads),
-      later(AppRoutes.downloadsChoose),
-      later(AppRoutes.share),
-      later(AppRoutes.shareWifi),
-      later(AppRoutes.receive),
+      GoRoute(
+        path: AppRoutes.downloads,
+        redirect: requireActiveProfile,
+        pageBuilder: (context, state) =>
+            appPage(state: state, child: const DownloadsScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.downloadsChoose,
+        redirect: requireActiveProfile,
+        pageBuilder: (context, state) =>
+            appPage(state: state, child: const ChooseDownloadsScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.share,
+        redirect: requireActiveProfile,
+        pageBuilder: (context, state) =>
+            appPage(state: state, child: const ShareScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.shareWifi,
+        redirect: requireActiveProfile,
+        pageBuilder: (context, state) =>
+            appPage(state: state, child: const SendWifiScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.shareNearby,
+        redirect: requireActiveProfile,
+        pageBuilder: (context, state) =>
+            appPage(state: state, child: const NearbySendScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.receive,
+        redirect: requireActiveProfile,
+        pageBuilder: (context, state) =>
+            appPage(state: state, child: const ReceiveScreen()),
+      ),
       GoRoute(
         path: AppRoutes.progress,
         redirect: requireActiveProfile,
@@ -256,16 +289,3 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-
-class _ComingSoonScreen extends StatelessWidget {
-  const _ComingSoonScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.mute,
-      appBar: AppBar(leading: const BackButton()),
-      body: Center(child: Text('قريبًا', style: AppTextStyles.heading22)),
-    );
-  }
-}

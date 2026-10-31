@@ -3,12 +3,14 @@ package com.rizma.rizma
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.net.Inet4Address
+import java.net.NetworkInterface
 
 class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -34,16 +36,12 @@ class MainActivity : FlutterActivity() {
                         }
                         result.success(true)
                     }
-                    "wifiAddresses" -> {
-                        val wifi = wifiNetwork(cm)
-                        val addresses = wifi?.let { cm.getLinkProperties(it) }
-                            ?.linkAddresses
-                            ?.map { it.address }
-                            ?.filterIsInstance<Inet4Address>()
-                            ?.mapNotNull { it.hostAddress }
-                            ?: emptyList()
-                        result.success(addresses)
-                    }
+                    // عناوين هذا الهاتف على الشبكة المحلية، من ثلاثة مصادر حتى لا
+                    // يُوقف فشلُ واحد البقية: «wifi|واجهة|عنوان» من شبكة الـ Wi-Fi
+                    // كما يراها أندرويد، و«iface|…» من واجهات الشبكة (والهوتسبوت
+                    // منها)، و«wm|…» من WifiManager. و«error|مصدر|سبب» للتشخيص.
+                    // (NetworkInterface.list في Dart يفشل على أندرويد 11 فما فوق.)
+                    "localAddresses" -> result.success(localAddresses(cm))
                     // «أرسل على Wi-Fi»: الشاشة لا تنطفئ، فكثير من الهواتف يقطع شبكة
                     // التطبيق حين تنقفل الشاشة فيتوقف الإرسال.
                     "keepScreenOn" -> {
@@ -57,9 +55,57 @@ class MainActivity : FlutterActivity() {
                         }
                         result.success(true)
                     }
+                    "sdkInt" -> result.success(Build.VERSION.SDK_INT)
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    private fun localAddresses(cm: ConnectivityManager): List<String> {
+        val out = mutableListOf<String>()
+        try {
+            @Suppress("DEPRECATION")
+            for (n in cm.allNetworks) {
+                val caps = cm.getNetworkCapabilities(n) ?: continue
+                if (!caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) &&
+                    !caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+                ) continue
+                val lp = cm.getLinkProperties(n) ?: continue
+                for (la in lp.linkAddresses) {
+                    val a = la.address
+                    if (a is Inet4Address) {
+                        out.add("wifi|${lp.interfaceName ?: ""}|${a.hostAddress}/${la.prefixLength}")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            out.add("error|wifi|${e.javaClass.simpleName}")
+        }
+        try {
+            for (i in NetworkInterface.getNetworkInterfaces()?.toList().orEmpty()) {
+                if (!i.isUp || i.isLoopback) continue
+                for (ia in i.interfaceAddresses) {
+                    val a = ia.address
+                    if (a is Inet4Address) {
+                        out.add("iface|${i.name}|${a.hostAddress}/${ia.networkPrefixLength}")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            out.add("error|iface|${e.javaClass.simpleName}")
+        }
+        try {
+            val wm = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            @Suppress("DEPRECATION")
+            val ip = wm.connectionInfo?.ipAddress ?: 0
+            if (ip != 0) {
+                // little-endian: أول بايت هو أول رقم في العنوان.
+                out.add("wm|wlan|${ip and 0xff}.${ip shr 8 and 0xff}.${ip shr 16 and 0xff}.${ip shr 24 and 0xff}")
+            }
+        } catch (e: Exception) {
+            out.add("error|wm|${e.javaClass.simpleName}")
+        }
+        return out
     }
 
     @Suppress("DEPRECATION")

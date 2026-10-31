@@ -50,12 +50,14 @@ DownloadService buildDownloadService(
   ContentConfig config, {
   http.Client? client,
   bool localSource = false,
+  Duration? idleTimeout,
 }) => DownloadService(
   ref.read(appDatabaseProvider),
   store,
   config,
   client: client,
   localSource: localSource,
+  idleTimeout: idleTimeout ?? const Duration(seconds: 30),
   now: ref.read(clockProvider),
   bundledLessonFile: (id, path) => path == 'lesson.json'
       ? _asset('assets/content/lessons/$id.json')

@@ -44,5 +44,11 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# مفتاح توقيع المحتوى لا يدخل المستودع أبدًا (ADR 002، 4.3).
+*.pem
+
+# صور الدروس وفيديوهاتها: تُنشر إلى مخزن الدروس (R2) ولا تدخل المستودع.
+/content-media/**/*.mp4
+
 # Local tooling
 .claude/
