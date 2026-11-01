@@ -16,13 +16,7 @@ class NearbyPeer {
   final String code;
 }
 
-enum NearbyProblem {
-  permission,
-
-  locationOff,
-
-  unsupported,
-}
+enum NearbyProblem { permission, locationOff, unsupported }
 
 class NearbyService {
   NearbyService(this._temp);

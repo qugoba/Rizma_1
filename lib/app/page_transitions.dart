@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-enum PageMotion {
-  tab,
-
-  push,
-}
+enum PageMotion { tab, push }
 
 CustomTransitionPage<void> appPage({
   required GoRouterState state,

@@ -6,17 +6,7 @@ import '../../core/db/app_database.dart';
 import '../../core/utils/student_code.dart';
 import 'sync_api.dart';
 
-enum SyncOutcome {
-  done,
-
-  offline,
-
-  needsRestore,
-
-  removed,
-
-  failed,
-}
+enum SyncOutcome { done, offline, needsRestore, removed, failed }
 
 enum RestoreStatus {
   restored,

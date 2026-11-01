@@ -7,11 +7,7 @@ import '../../../core/widgets/progress_bar.dart';
 import '../../../core/widgets/tag_chip.dart';
 
 class StepProgressCard extends StatelessWidget {
-  const StepProgressCard({
-    super.key,
-    required this.label,
-    required this.value,
-  });
+  const StepProgressCard({super.key, required this.label, required this.value});
 
   final String label;
 

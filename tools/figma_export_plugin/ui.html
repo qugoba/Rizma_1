@@ -1,0 +1,60 @@
+<!doctype html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8">
+<style>
+  body { font-family: Segoe UI, Tahoma, sans-serif; font-size: 13px; margin: 14px; color: #0F2A2E; }
+  #status { margin: 8px 0 14px; line-height: 1.7; }
+  button { display: block; width: 100%; padding: 10px; margin: 6px 0; border: 0; border-radius: 8px;
+           background: #177A63; color: #fff; font-size: 14px; cursor: pointer; }
+  button:disabled { background: #C9D2CD; cursor: default; }
+</style>
+</head>
+<body>
+  <div><b>Rizma Export</b></div>
+  <div id="status">جارٍ القراءة…</div>
+  <button id="json" disabled>1) تنزيل المواصفات (JSON)</button>
+  <button id="png" disabled>2) تنزيل لقطات الإطارات (PNG)</button>
+<script>
+  var jsonText = null;
+  var pngs = [];
+  var status = document.getElementById('status');
+  var jsonBtn = document.getElementById('json');
+  var pngBtn = document.getElementById('png');
+
+  function download(name, blob) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+  function safe(n) { return String(n).replace(/[\\/:*?"<>|]+/g, '_').slice(0, 60); }
+
+  jsonBtn.onclick = function () {
+    download('rizma_figma_spec.json', new Blob([jsonText], { type: 'application/json' }));
+  };
+  pngBtn.onclick = function () {
+    pngBtn.disabled = true;
+    var i = 0;
+    (function next() {
+      if (i >= pngs.length) { status.textContent = 'تم تنزيل ' + pngs.length + ' صورة.'; pngBtn.disabled = false; return; }
+      var p = pngs[i++];
+      download(('0' + p.index).slice(-2) + '_' + safe(p.name) + '.png', new Blob([p.bytes], { type: 'image/png' }));
+      setTimeout(next, 600);
+    })();
+  };
+
+  onmessage = function (e) {
+    var m = e.data.pluginMessage;
+    if (!m) return;
+    if (m.type === 'start') status.textContent = 'عدد الإطارات: ' + m.count;
+    if (m.type === 'progress') status.textContent = 'قراءة ' + m.done + ' من ' + m.total + ': ' + m.name;
+    if (m.type === 'json') { jsonText = m.data; jsonBtn.disabled = false; status.textContent = 'المواصفات جاهزة. جارٍ تصدير الصور…'; }
+    if (m.type === 'png') pngs.push(m);
+    if (m.type === 'done') { pngBtn.disabled = false; status.textContent = 'جاهز: نزّل الملف ثم الصور (' + pngs.length + ').'; }
+  };
+</script>
+</body>
+</html>

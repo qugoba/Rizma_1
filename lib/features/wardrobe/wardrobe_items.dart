@@ -3,11 +3,7 @@ import '../../core/strings/ar_progress.dart';
 
 enum WardrobeKind { accessory, color }
 
-enum Unlock {
-  none,
-
-  lessonCompleted,
-}
+enum Unlock { none, lessonCompleted }
 
 class WardrobeItem {
   const WardrobeItem({

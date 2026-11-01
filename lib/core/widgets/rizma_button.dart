@@ -7,21 +7,7 @@ import 'app_icon.dart';
 import 'ledge.dart';
 import 'pressable_scale.dart';
 
-enum ButtonKind {
-  filled,
-
-  outlined,
-
-  soft,
-
-  neutral,
-
-  ink,
-
-  amber,
-
-  coral,
-}
+enum ButtonKind { filled, outlined, soft, neutral, ink, amber, coral }
 
 class RizmaButton extends StatelessWidget {
   const RizmaButton({

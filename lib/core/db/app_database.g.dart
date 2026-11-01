@@ -1,5 +1,3 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
-
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
@@ -373,24 +371,19 @@ class Profile extends DataClass implements Insertable<Profile> {
   final int grade;
   final ProfileColor color;
 
-  /// SHA-256 للرمز السري مع salt عشوائي. null = لا رمز سري. لا يُرفع.
   final String? pinHash;
   final String? pinSalt;
   final String studentCode;
   final String? classCode;
 
-  /// معرّفات قطع الخزانة المرتداة، مفصولة بفواصل (فارغ = لا شيء).
   final String equipped;
   final DateTime createdAt;
   final DateTime lastActiveAt;
 
-  /// رقم النسخة على الخادم؛ يرفعه الخادم مع كل تعديل مقبول. 0 = لم يُرفع قط.
   final int revision;
 
-  /// يزيد واحدًا مع كل تعديل محلي على ما يُرفع؛ يحسم سباق «عُدّل أثناء الرفع».
   final int localVersion;
 
-  /// متى رُفعت آخر نسخة. null = فيه تعديل لم يُرفع بعد.
   final DateTime? syncedAt;
   const Profile({
     required this.id,
@@ -1371,7 +1364,6 @@ class LessonPartEntry extends DataClass implements Insertable<LessonPartEntry> {
   final LessonPart part;
   final DateTime completedAt;
 
-  /// متى رُفع إلى الخادم. null = لم يُرفع بعد. حدث لا يتغيّر بعد حفظه.
   final DateTime? syncedAt;
   const LessonPartEntry({
     required this.profileId,
@@ -1753,7 +1745,6 @@ class OwnedItem extends DataClass implements Insertable<OwnedItem> {
   final int cost;
   final DateTime acquiredAt;
 
-  /// متى رُفع إلى الخادم. null = لم يُرفع بعد. حدث لا يتغيّر بعد حفظه.
   final DateTime? syncedAt;
   const OwnedItem({
     required this.profileId,
@@ -2281,7 +2272,6 @@ class $AttemptsTable extends Attempts with TableInfo<$AttemptsTable, Attempt> {
 }
 
 class Attempt extends DataClass implements Insertable<Attempt> {
-  /// UUID يُنشأ على الهاتف (لا رقم تسلسلي: هاتفان قد يعطيان الرقم نفسه).
   final String id;
   final String profileId;
   final String activityId;
@@ -2290,20 +2280,14 @@ class Attempt extends DataClass implements Insertable<Attempt> {
   final int total;
   final int starsEarned;
 
-  /// عدد التلميحات المستعملة في الجولة.
   final int hintsUsed;
 
-  /// نتيجة كل سؤال (JSON): معرّفه وبصمة محتواه ونوعه ومفهومه وصحّته وتلميحاته.
-  /// منها تُبنى شاشات النتيجة وخطة المراجعة، ويُعاد حساب الإتقان. null للألعاب.
   final String? detailsJson;
 
-  /// وقت الهاتف عند انتهاء الجولة.
   final DateTime createdAt;
 
-  /// متى رُفعت إلى الخادم. null = لم تُرفع بعد.
   final DateTime? syncedAt;
 
-  /// وقت استلام الخادم لها (من ساعته هو)، يصل مع السحب. null قبل ذلك.
   final DateTime? serverReceivedAt;
   const Attempt({
     required this.id,
@@ -3213,16 +3197,12 @@ class Bookmark extends DataClass implements Insertable<Bookmark> {
   final String profileId;
   final String lessonId;
 
-  /// متى أُزيل. null = محفوظ حاليًا.
   final DateTime? removedAt;
 
-  /// وقت آخر تعديل على الهاتف (للترتيب في الواجهة فقط، لا لحسم التعارض).
   final DateTime updatedAt;
 
-  /// يزيد واحدًا مع كل تعديل محلي.
   final int localVersion;
 
-  /// متى رُفع آخر تعديل. null = فيه تعديل لم يُرفع بعد.
   final DateTime? syncedAt;
   const Bookmark({
     required this.profileId,
@@ -3874,20 +3854,14 @@ class $ContentManifestsTable extends ContentManifests
 class ContentManifest extends DataClass implements Insertable<ContentManifest> {
   final int grade;
 
-  /// يزيد مع كل نشر. فهرس رقمه أقل من هذا يُرفض.
   final int sequence;
 
-  /// نص الفهرس كما وصل وفُحص توقيعه.
   final String body;
 
-  /// توقيعه (base64) كما وصل، ليُرسل مع الفهرس إلى هاتف آخر (ADR 003؛
-  /// الإصدار 6). null لفهرس قُبل قبل ذلك: يُشارك بعد الفحص التالي.
   final String? signature;
 
-  /// بصمة الكتالوج المفعّل لهذا الصف. null = كتالوج التطبيق.
   final String? catalogSha256;
 
-  /// كتالوج الفهرس الأحدث، ينتظر اكتمال تنزيله ليصبح المفعّل.
   final String? pendingCatalogSha256;
   final DateTime fetchedAt;
   const ContentManifest({
@@ -4536,23 +4510,17 @@ class $ContentLessonsTable extends ContentLessons
 class ContentLesson extends DataClass implements Insertable<ContentLesson> {
   final String lessonId;
 
-  /// النسخة المثبّتة. 0 = لا نسخة منزَّلة بعد (نسخة التطبيق تُعرض).
   final int version;
   final int contentFormat;
 
-  /// ملفات النسخة المثبّتة: JSON `{path: sha256}`.
   final String files;
 
-  /// فيديو النسخة المثبّتة (إن وُجد في الفهرس، نُزِّل أم لا).
   final String? videoSha256;
   final int? videoSize;
 
-  /// مرفقات النسخة المثبّتة (ملخص PDF مثلًا): JSON `{sha256: الحجم}`، تُنزَّل باختيار
-  /// الطالب (الإصدار 5).
   final String? attachments;
   final DateTime? installedAt;
 
-  /// النسخة المنتظرة وملفاتها، أو null إن لا شيء ينتظر.
   final int? pendingVersion;
   final int? pendingContentFormat;
   final String? pendingFiles;
@@ -5578,17 +5546,13 @@ class $ContentDownloadsTable extends ContentDownloads
 class ContentDownload extends DataClass implements Insertable<ContentDownload> {
   final String sha256;
 
-  /// الحجم المكتوب في الفهرس، وهو حد أعلى: ما يتجاوزه يُرفض.
   final int size;
   final BlobKind kind;
 
-  /// الأصغر أولًا: 0 الكتالوج، 1 الوحدة الحالية، 2 بقية الدروس، 3 الفيديو.
   final int priority;
 
-  /// بايتات مكتوبة في `blobs/<sha256>.part` (من هنا يكمل التنزيل).
   final int received;
 
-  /// محاولات انتهت بملف تالف. بعد 3 يتوقف هذا الملف حتى الفهرس التالي.
   final int failures;
   final String? lastError;
   final DateTime createdAt;

@@ -3,13 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/db/app_database.dart';
 import '../profiles/profile_providers.dart';
 
-enum LaunchTarget {
-  welcome,
-
-  home,
-
-  picker,
-}
+enum LaunchTarget { welcome, home, picker }
 
 class LaunchPlan {
   const LaunchPlan(this.target, {this.profileId});

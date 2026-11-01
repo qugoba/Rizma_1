@@ -316,10 +316,7 @@ class _PacksInfo extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(ArStrings.step1InfoTitle, style: AppTextStyles.h3_17),
-                  Text(
-                    ArStrings.step1InfoBody,
-                    style: AppTextStyles.caption13,
-                  ),
+                  Text(ArStrings.step1InfoBody, style: AppTextStyles.caption13),
                 ],
               ),
             ),

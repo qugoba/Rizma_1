@@ -2,19 +2,9 @@ import 'dart:math';
 
 import '../content/question.dart';
 
-enum RoundMode {
-  practice,
+enum RoundMode { practice, quiz }
 
-  quiz,
-}
-
-enum RoundPhase {
-  answering,
-
-  correct,
-
-  revealed,
-}
+enum RoundPhase { answering, correct, revealed }
 
 class QuestionLayout {
   const QuestionLayout({this.order = const [], this.cards = const []});
