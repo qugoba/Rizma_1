@@ -50,7 +50,10 @@ class FeaturedLessonCard extends StatelessWidget {
           AppIcon(lesson.subject.icon, size: 16, color: fg),
           Flexible(
             child: Text(
-              ArStrings.homeSubjectUnit(lesson.subject.title, lesson.unit.title),
+              ArStrings.homeSubjectUnit(
+                lesson.subject.title,
+                lesson.unit.title,
+              ),
               style: AppTextStyles.caption12.copyWith(color: fg),
             ),
           ),

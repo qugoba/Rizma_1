@@ -158,8 +158,7 @@ class _DeleteProfileSheetState extends ConsumerState<_DeleteProfileSheet> {
     Haptics.heavy();
     try {
       await _service!.unlink(widget.profile.id);
-    } catch (_) {
-    }
+    } catch (_) {}
     if (mounted) _close(DeleteOutcome.removedFromPhone);
   }
 

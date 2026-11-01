@@ -1,8 +1,3 @@
--- عقد المزامنة بين الهاتف والخادم (ADR 001). يُشغَّل بـ: supabase test db
---
--- ثلاث هويات مجهولة: u1 الهاتف الأول للطالب، u2 هاتف جديد يستعيد الملف، u3 غريب.
--- ما لا يُختبر هنا: التزامن الحقيقي بين معاملتين (قفل الطالب)، لأن الاختبار يعمل
--- في جلسة واحدة. انظر README.
 begin;
 select plan(46);
 
@@ -11,12 +6,9 @@ insert into auth.users (id, is_anonymous) values
   ('22222222-2222-4222-8222-222222222222', true),
   ('33333333-3333-4333-8333-333333333333', true);
 
--- نتائج الاستدعاءات لنفحصها بعدة تأكيدات.
 create temp table out (k text primary key, v jsonb);
 grant all on out to authenticated;
 
--- ═════════════════════════════════════════════════════════════════════════════
--- الهاتف الأول (u1) ينشئ الطالب ويرفع أحداثه.
 set local role authenticated;
 set local "request.jwt.claims" to '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}';
 
@@ -54,7 +46,6 @@ select is((select v #> '{accepted,lesson_parts}' from out where k = 'up1'),
 select is((select v #> '{accepted,bookmarks}' from out where k = 'up1'), '["math.u1.l2"]'::jsonb,
   'المفضّلة مقبولة');
 
--- إعادة الدفعة نفسها (انقطع الرد قبل أن يصل): لا تكرار، والمعرّف يبقى مقبولًا.
 insert into out values ('again', public.upload_batch('{
   "profile_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
   "attempts": [
@@ -69,7 +60,6 @@ select is((select count(*)::int from public.attempts), 2,
   'ولا تُحفظ مرتين (والهوية ترى أحداث طالبها تحت RLS)');
 select is((select count(*)::int from public.profiles), 1, 'وترى ملفه');
 
--- السحب من الصفر.
 insert into out values ('pull0', public.pull_changes('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 0, 500));
 select is((select jsonb_array_length(v -> 'attempts') from out where k = 'pull0'), 2,
   'السحب يعيد المحاولتين');
@@ -95,7 +85,6 @@ insert into out values ('page', public.pull_changes('aaaaaaaa-aaaa-4aaa-8aaa-aaa
 select is((select (v ->> 'has_more')::boolean from out where k = 'page'), true,
   'السحب على صفحات: حد الصفحة يترك has_more');
 
--- تعديل الملف على آخر نسخة، ثم على نسخة قديمة.
 insert into out values ('upd', public.upload_batch('{
   "profile_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
   "profile": {"base_revision": 1, "grade": 6, "color": "coral", "class_code": "GZ-5A",
@@ -115,7 +104,6 @@ select is((select v #>> '{profile,status}' from out where k = 'stale'), 'conflic
 select is((select (v #>> '{profile,profile,grade}')::int from out where k = 'stale'), 6,
   'والخادم يعيد نسخته الأحدث ولا يغيّرها');
 
--- المفضّلة: الإزالة تأخذ رقمًا جديدًا فتصل بالسحب.
 insert into out values ('bm', public.upload_batch('{
   "profile_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
   "bookmarks": [{"lesson_id": "math.u1.l2", "removed_at": "2026-10-24T10:00:00Z",
@@ -129,7 +117,6 @@ select is((select v #>> '{bookmarks,0,removed_at}' from out where k = 'pullbm') 
 select is((select jsonb_array_length(v -> 'attempts') from out where k = 'pullbm'), 0,
   'والأحداث القديمة لا تعود');
 
--- حجم الدفعة.
 select throws_ok(
   $$select public.upload_batch(jsonb_build_object(
       'profile_id', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
@@ -138,8 +125,6 @@ select throws_ok(
         from generate_series(1, 201) i)))$$,
   'RZ413', 'batch_too_large', 'دفعة أكبر من 200 صف تُرفض');
 
--- ═════════════════════════════════════════════════════════════════════════════
--- هوية غريبة (u3).
 set local "request.jwt.claims" to '{"sub":"33333333-3333-4333-8333-333333333333","role":"authenticated"}';
 
 select is((select count(*)::int from public.attempts), 0,
@@ -164,12 +149,10 @@ select throws_ok(
   $$select public.upload_batch('{"profile_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd"}')$$,
   'RZ404', 'profile_unknown', 'رفع لطالب غير موجود دون بيانات ملفه يُرفض');
 
--- منع التخمين: 5 أخطاء على نفس الرمز تقفله 15 دقيقة.
 select is(public.restore_profile('RZ-2222-2222') ->> 'status', 'wrong_code', 'رمز خاطئ');
 do $$ begin perform public.restore_profile('RZ-2222-2222') from generate_series(1, 4); end $$;
 select is(public.restore_profile('RZ-2222-2222') ->> 'status', 'code_locked',
   'الرمز يُقفل بعد 5 محاولات خاطئة');
--- فشل الهوية حتى الآن 6 (الأخطاء الخمسة + محاولة على رمز مقفل). ثلاث أخرى ← 9.
 do $$ begin
   perform public.restore_profile(c)
   from unnest(array['RZ-3333-3333', 'RZ-3333-4444', 'RZ-3333-5555']) c;
@@ -179,8 +162,6 @@ select is(public.restore_profile('RZ-3333-6666') ->> 'status', 'wrong_code',
 select is(public.restore_profile('RZ-7K4M-9P2Q') ->> 'status', 'device_locked',
   'بعد 10 محاولات فاشلة تُقفل الهوية ساعة، حتى بالرمز الصحيح');
 
--- ═════════════════════════════════════════════════════════════════════════════
--- هاتف جديد (u2) يستعيد الملف برمز الطالب فقط.
 set local "request.jwt.claims" to '{"sub":"22222222-2222-4222-8222-222222222222","role":"authenticated"}';
 
 select is(public.restore_profile(' rz7k4m9p2q ') ->> 'status', 'restored',
@@ -189,7 +170,6 @@ select is(jsonb_array_length(
     public.pull_changes('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 0) -> 'attempts'), 2,
   'والهاتف الجديد يسحب كل النتائج من الصفر');
 
--- الحذف النهائي.
 select is(public.request_deletion('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'RZ-2222-2222') ->> 'status',
   'wrong_code', 'الحذف النهائي يتطلب رمز الطالب الصحيح');
 select is(public.request_deletion('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'RZ-7K4M-9P2Q') ->> 'status',
@@ -205,15 +185,12 @@ select lives_ok(
   $$select public.upload_batch('{"profile_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"}')$$,
   'بعد الإلغاء يعود الرفع');
 
--- زائر بلا هوية.
 reset role;
 set local role anon;
 select throws_ok(
   $$select public.pull_changes('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')$$,
   '42501', null, 'الزائر بلا هوية لا يستطيع استدعاء الدوال');
 
--- ═════════════════════════════════════════════════════════════════════════════
--- الصيانة اليومية.
 reset role;
 update public.profiles set deletion_requested_at = now() - interval '15 days'
 where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';

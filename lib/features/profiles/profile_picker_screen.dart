@@ -62,9 +62,7 @@ class ProfilePickerScreen extends ConsumerWidget {
                   Text(ArStrings.pickerTitle, style: AppTextStyles.title26),
                   Text(
                     ArStrings.pickerSubtitle,
-                    style: AppTextStyles.body15.copyWith(
-                      color: AppColors.soft,
-                    ),
+                    style: AppTextStyles.body15.copyWith(color: AppColors.soft),
                   ),
                 ],
               ),
@@ -313,4 +311,3 @@ class _SafeCard extends StatelessWidget {
     );
   }
 }
-

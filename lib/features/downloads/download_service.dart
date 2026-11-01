@@ -41,25 +41,11 @@ class ContentConfig {
   }
 }
 
-enum CheckResult {
-  updated,
-
-  unchanged,
-
-  offline,
-
-  rejected,
-}
+enum CheckResult { updated, unchanged, offline, rejected }
 
 enum DownloadItemKind { lesson, video, attachment }
 
-enum DownloadItemState {
-  onPhone,
-
-  queued,
-
-  available,
-}
+enum DownloadItemState { onPhone, queued, available }
 
 class DownloadItem {
   DownloadItem._({
@@ -132,15 +118,7 @@ class ShareInventory {
   };
 }
 
-enum RunResult {
-  done,
-
-  offline,
-
-  stopped,
-
-  storageFull,
-}
+enum RunResult { done, offline, stopped, storageFull }
 
 class DownloadService {
   DownloadService(

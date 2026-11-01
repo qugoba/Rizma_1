@@ -28,8 +28,7 @@ class _MemoryStore implements SessionStore {
 String _jwt(String userId, {required Duration expiresIn}) {
   String part(Map<String, Object> m) =>
       base64Url.encode(utf8.encode(jsonEncode(m))).replaceAll('=', '');
-  final exp =
-      DateTime.now().add(expiresIn).millisecondsSinceEpoch ~/ 1000;
+  final exp = DateTime.now().add(expiresIn).millisecondsSinceEpoch ~/ 1000;
   return '${part({'alg': 'HS256', 'typ': 'JWT'})}.'
       '${part({'sub': userId, 'exp': exp, 'role': 'authenticated'})}.sig';
 }
@@ -179,16 +178,19 @@ void main() {
       expect(jsonDecode(store.value!)['refresh_token'], 'rt-new-1');
     });
 
-    test('انقطاع أثناء التجديد: لا هوية جديدة، والجلسة المحفوظة تبقى', () async {
-      final saved = jsonEncode(
-        _session('user-old', 'rt-1', expiresIn: const Duration(hours: -1)),
-      );
-      store.value = saved;
-      server.offline = true;
-      expect(await errorOf(newApi().ensureSignedIn), SyncError.network);
-      expect(server.signups, 0);
-      expect(store.value, saved);
-    });
+    test(
+      'انقطاع أثناء التجديد: لا هوية جديدة، والجلسة المحفوظة تبقى',
+      () async {
+        final saved = jsonEncode(
+          _session('user-old', 'rt-1', expiresIn: const Duration(hours: -1)),
+        );
+        store.value = saved;
+        server.offline = true;
+        expect(await errorOf(newApi().ensureSignedIn), SyncError.network);
+        expect(server.signups, 0);
+        expect(store.value, saved);
+      },
+    );
 
     test('دون إنترنت في أول مرة: انقطاع لا خطأ', () async {
       server.offline = true;
@@ -256,7 +258,11 @@ void main() {
           'hint': null,
           'message': 'x',
         }, 400);
-        expect(await errorOf(() => api.pullChanges('p1', 0)), error, reason: code);
+        expect(
+          await errorOf(() => api.pullChanges('p1', 0)),
+          error,
+          reason: code,
+        );
       }
     });
 

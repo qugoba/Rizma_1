@@ -158,10 +158,7 @@ class _BundleCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(ArStrings.welcomeCardTitle, style: AppTextStyles.h3_17),
-                Text(
-                  ArStrings.welcomeCardBody,
-                  style: AppTextStyles.caption13,
-                ),
+                Text(ArStrings.welcomeCardBody, style: AppTextStyles.caption13),
               ],
             ),
           ),

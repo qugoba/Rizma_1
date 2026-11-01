@@ -129,10 +129,7 @@ class _StudentHeader extends StatelessWidget {
                 ArStrings.codeStudentCard(profile.name),
                 style: AppTextStyles.heading22,
               ),
-              TagChip(
-                label: ArStrings.gradeName(profile.grade),
-                icon: 'book',
-              ),
+              TagChip(label: ArStrings.gradeName(profile.grade), icon: 'book'),
             ],
           ),
         ),

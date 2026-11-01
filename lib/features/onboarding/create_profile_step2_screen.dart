@@ -201,9 +201,7 @@ class _Preview extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.avatarBackground,
         borderRadius: BorderRadius.circular(26),
-        boxShadow: [
-          BoxShadow(color: color.fold, offset: const Offset(0, 4)),
-        ],
+        boxShadow: [BoxShadow(color: color.fold, offset: const Offset(0, 4))],
       ),
       child: Column(
         spacing: 4,
@@ -309,8 +307,7 @@ class _ColorDot extends StatelessWidget {
                   : null,
               boxShadow: [
                 BoxShadow(color: color.dark, offset: const Offset(0, 4)),
-                if (selected)
-                  BoxShadow(color: color.body, spreadRadius: 3),
+                if (selected) BoxShadow(color: color.body, spreadRadius: 3),
               ],
             ),
             alignment: Alignment.center,

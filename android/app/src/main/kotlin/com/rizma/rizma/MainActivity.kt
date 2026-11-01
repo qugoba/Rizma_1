@@ -15,10 +15,6 @@ import java.net.NetworkInterface
 class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        // النقل من هاتف لهاتف على Wi-Fi (ADR 003). شبكة Wi-Fi أو هوتسبوت بلا
-        // إنترنت لا تصبح شبكة أندرويد الافتراضية، فتذهب الاتصالات عبر بيانات
-        // الهاتف ولا تصل للهاتف الآخر. نربط التطبيق بالـ Wi-Fi ما دامت شاشة
-        // الاستلام مفتوحة، ونفكّه بعدها.
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "rizma/network")
             .setMethodCallHandler { call, result ->
                 val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -36,14 +32,7 @@ class MainActivity : FlutterActivity() {
                         }
                         result.success(true)
                     }
-                    // عناوين هذا الهاتف على الشبكة المحلية، من ثلاثة مصادر حتى لا
-                    // يُوقف فشلُ واحد البقية: «wifi|واجهة|عنوان» من شبكة الـ Wi-Fi
-                    // كما يراها أندرويد، و«iface|…» من واجهات الشبكة (والهوتسبوت
-                    // منها)، و«wm|…» من WifiManager. و«error|مصدر|سبب» للتشخيص.
-                    // (NetworkInterface.list في Dart يفشل على أندرويد 11 فما فوق.)
                     "localAddresses" -> result.success(localAddresses(cm))
-                    // «أرسل على Wi-Fi»: الشاشة لا تنطفئ، فكثير من الهواتف يقطع شبكة
-                    // التطبيق حين تنقفل الشاشة فيتوقف الإرسال.
                     "keepScreenOn" -> {
                         val on = call.arguments as? Boolean ?: false
                         runOnUiThread {
@@ -99,7 +88,6 @@ class MainActivity : FlutterActivity() {
             @Suppress("DEPRECATION")
             val ip = wm.connectionInfo?.ipAddress ?: 0
             if (ip != 0) {
-                // little-endian: أول بايت هو أول رقم في العنوان.
                 out.add("wm|wlan|${ip and 0xff}.${ip shr 8 and 0xff}.${ip shr 16 and 0xff}.${ip shr 24 and 0xff}")
             }
         } catch (e: Exception) {

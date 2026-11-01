@@ -1,13 +1,3 @@
--- رِزمة — الصيانة اليومية (ADR 6.4 و7 و8). تعمل مرة في اليوم عبر pg_cron.
---
--- 1. حذف الملفات التي طُلب حذفها نهائيًا منذ 14 يومًا (المهلة انتهت).
--- 2. حذف الملفات بلا أي نشاط منذ 24 شهرًا (النشاط = رفع أو سحب أو استعادة من
---    أي جهاز مرتبط). 24 لا 12 بسبب النزوح.
--- 3. حذف الهويات المجهولة اليتيمة: بلا طالب مرتبط، وعمرها أكثر من 30 يومًا.
--- 4. تنظيف سجلات حدود التخمين القديمة.
---
--- حذف الملف يحذف كل أحداثه وروابط أجهزته (on delete cascade).
-
 create function private.run_maintenance()
 returns jsonb
 language plpgsql
@@ -52,9 +42,6 @@ $$;
 
 revoke all on function private.run_maintenance() from public, anon, authenticated;
 
--- الجدولة: 3:17 فجرًا بتوقيت الخادم كل يوم. تحتاج إضافة pg_cron مفعّلة في
--- Supabase (Database ← Extensions). إن لم تكن مفعّلة يُتخطّى هذا الجزء دون خطأ،
--- ويُشغَّل لاحقًا بالسطر نفسه من محرر SQL (انظر README).
 do $$
 begin
   if exists (select 1 from pg_extension where extname = 'pg_cron') then

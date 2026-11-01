@@ -1,17 +1,6 @@
--- رِزمة — دوال الخادم (RPC) التي يستدعيها الهاتف. العقد مشروح في supabase/README.md.
---
--- كل دالة عامة `security definer` بمسار بحث فارغ وأسماء كاملة، فلا يمكن خداعها
--- بجدول أو دالة بالاسم نفسه في مخطط آخر. الأخطاء التي يجب أن يفهمها الهاتف تُرفع
--- برسائل ثابتة ورموز SQLSTATE من فئة RZ (انظر README). أما النتائج المتوقعة في
--- الاستعادة (رمز خاطئ، مقفل…) فتُعاد كحالة لا كخطأ، حتى لا تُلغى عدّادات التخمين.
-
 create schema if not exists private;
 revoke all on schema private from public;
 
--- ─────────────────────────────────────────────────────────────────────────────
--- أدوات داخلية (مخطط private غير مكشوف للهاتف).
-
--- الهوية الحالية أو خطأ.
 create function private.require_user()
 returns uuid
 language plpgsql
@@ -28,9 +17,6 @@ begin
 end;
 $$;
 
--- قفل الطالب (ADR 5.1): يُؤخذ قبل أي كتابة، فلا تتقاطع كتابتان لنفس الطالب،
--- وتُحجز أرقام `server_seq` بعد القفل فتظهر للسحب بترتيبها. يُفك عند انتهاء
--- المعاملة تلقائيًا.
 create function private.lock_profile(p_profile_id uuid)
 returns void
 language sql
@@ -39,8 +25,6 @@ as $$
   select pg_advisory_xact_lock(hashtextextended('rizma.profile:' || p_profile_id::text, 0));
 $$;
 
--- يوحّد رمز الطالب كما يفعل الهاتف: أحرف كبيرة، بلا مسافات، ويضع الشرطات إن
--- كُتب بدونها (rz7k4m9p2q ← RZ-7K4M-9P2Q).
 create function private.normalize_code(p_code text)
 returns text
 language sql
@@ -55,7 +39,6 @@ as $$
   from (select upper(regexp_replace(coalesce(p_code, ''), '[[:space:]-]', '', 'g')) as compact) c;
 $$;
 
--- بصمة الرمز لجدول حدود التخمين (الرمز نفسه لا يُخزَّن هناك).
 create function private.code_hash(p_code text)
 returns text
 language sql
@@ -65,7 +48,6 @@ as $$
   select encode(sha256(convert_to(p_code, 'UTF8')), 'hex');
 $$;
 
--- يتأكد أن الطالب موجود، غير محذوف، ومرتبط بهذه الهوية.
 create function private.assert_access(p_profile_id uuid, p_uid uuid)
 returns void
 language plpgsql
@@ -92,7 +74,6 @@ begin
 end;
 $$;
 
--- ملف الطالب كما يُرسل للهاتف (لا اسم ولا رقم سري هنا أصلًا).
 create function private.profile_json(p public.profiles)
 returns jsonb
 language sql
@@ -113,7 +94,6 @@ as $$
   );
 $$;
 
--- محاولة استعادة خاطئة على رمز: 5 تقفله 15 دقيقة (ADR 3).
 create function private.record_code_failure(p_code_hash text)
 returns void
 language plpgsql
@@ -125,7 +105,6 @@ begin
   insert into public.restore_code_failures as f (code_hash, failures, last_failure_at)
   values (p_code_hash, 1, now())
   on conflict (code_hash) do update set
-    -- بعد انتهاء قفل سابق يبدأ العدّ من جديد.
     failures = case when f.locked_until is not null then 1 else f.failures + 1 end,
     locked_until = null,
     last_failure_at = now()
@@ -139,7 +118,6 @@ begin
 end;
 $$;
 
--- محاولة استعادة فاشلة من هوية: 10 خلال ساعة تقفلها ساعة (ADR 3).
 create function private.record_device_failure(p_uid uuid)
 returns void
 language plpgsql
@@ -172,27 +150,6 @@ begin
 end;
 $$;
 
--- ─────────────────────────────────────────────────────────────────────────────
--- الرفع (ADR 5.2): دفعة واحدة لطالب واحد، بحد أقصى 200 صف أو حوالي 300 كيلوبايت.
---
--- الدفعة:
--- {
---   "profile_id": uuid,
---   "profile": {            -- اختياري: يُرسل إن كان في الملف تعديل لم يُرفع
---     "base_revision": int, -- آخر revision رآه الهاتف (0 لملف جديد)
---     "student_code", "grade", "color", "class_code", "equipped", "created_at"
---   },
---   "attempts":     [{id, activity_id, kind, score, total, stars_earned, hints_used, details, created_at}],
---   "owned_items":  [{item_id, cost, acquired_at}],
---   "lesson_parts": [{lesson_id, part, completed_at}],
---   "bookmarks":    [{lesson_id, removed_at, updated_at}]
--- }
---
--- الرد: { "profile": null | {status: created|updated|conflict, revision, profile?},
---         "accepted": {attempts: [id], owned_items: [item_id],
---                      lesson_parts: [{lesson_id, part}], bookmarks: [lesson_id]} }
--- الهاتف يعلّم «مرفوعًا» ما في `accepted` فقط، وللصفوف التي تتغيّر يتأكد أولًا أن
--- `local_version` لم يتغيّر منذ الإرسال.
 create function public.upload_batch(p_batch jsonb)
 returns jsonb
 language plpgsql
@@ -231,13 +188,11 @@ begin
     raise exception 'batch_too_large' using errcode = 'RZ413';
   end if;
 
-  -- القفل قبل أي إدخال، حتى تُحجز أرقام server_seq بعده.
   perform private.lock_profile(v_profile_id);
 
   select * into v_current from public.profiles where id = v_profile_id;
 
   if not found then
-    -- أول رفع لملف أُنشئ على هذا الهاتف: يُنشأ ويُربط بالهوية.
     if v_profile is null then
       raise exception 'profile_unknown' using errcode = 'RZ404';
     end if;
@@ -255,7 +210,6 @@ begin
       )
       returning * into v_current;
     exception when unique_violation then
-      -- رمز الطالب مستعمل لطالب آخر (احتمال ضئيل جدًا): الهاتف يولّد غيره.
       raise exception 'student_code_taken' using errcode = 'RZ409';
     end;
     insert into public.profile_devices (profile_id, user_id)
@@ -281,7 +235,6 @@ begin
           'status', 'updated', 'revision', v_current.revision
         );
       else
-        -- نسخة الخادم أحدث: الهاتف يأخذها ويعيد تطبيق الحقل الذي عدّله فقط.
         v_profile_result := jsonb_build_object(
           'status', 'conflict',
           'revision', v_current.revision,
@@ -291,7 +244,6 @@ begin
     end if;
   end if;
 
-  -- أحداث لا تتغيّر: تُدخل ويُتجاهل المكرر.
   insert into public.attempts (
     id, profile_id, activity_id, kind, score, total,
     stars_earned, hints_used, details, created_at
@@ -318,7 +270,6 @@ begin
   )
   on conflict (profile_id, lesson_id, part) do nothing;
 
-  -- صفوف تتغيّر: آخر تغيير يستلمه الخادم يفوز، ويأخذ server_seq جديدًا.
   insert into public.bookmarks (profile_id, lesson_id, removed_at, updated_at)
   select distinct on (r.lesson_id)
     v_profile_id, r.lesson_id, r.removed_at, r.updated_at
@@ -337,8 +288,6 @@ begin
   return jsonb_build_object(
     'profile', v_profile_result,
     'accepted', jsonb_build_object(
-      -- المقبول = ما صار محفوظًا لهذا الطالب (الجديد والمكرر معًا)، لا معرّف
-      -- يخص طالبًا آخر.
       'attempts', (
         select coalesce(jsonb_agg(a.id), '[]'::jsonb)
         from public.attempts a
@@ -371,13 +320,6 @@ begin
 end;
 $$;
 
--- ─────────────────────────────────────────────────────────────────────────────
--- السحب (ADR 6.1): صفوف الطالب التي `server_seq` فيها أكبر من مؤشر الهاتف، مرتبة،
--- على دفعات. المؤشر لكل طالب؛ الهاتف يحفظ `next_cursor` ويسحب ثانية ما دام
--- `has_more` صحيحًا.
---
--- الرد: { profile: null | {...}, attempts: [...], owned_items: [...],
---         lesson_parts: [...], bookmarks: [...], next_cursor: bigint, has_more: bool }
 create function public.pull_changes(
   p_profile_id uuid,
   p_cursor bigint default 0,
@@ -397,7 +339,6 @@ declare
 begin
   perform private.assert_access(p_profile_id, v_uid);
 
-  -- آخر رقم في هذه الصفحة: أصغر [v_limit] رقمًا بعد المؤشر عبر كل الجداول.
   select max(s) into v_upto
   from (
     select s from (
@@ -467,17 +408,6 @@ begin
 end;
 $$;
 
--- ─────────────────────────────────────────────────────────────────────────────
--- الاستعادة برمز الطالب (ADR 3): تربط هذه الهوية بالطالب، ثم يسحب الهاتف من
--- مؤشر صفر ويعيد حساب الإتقان والتقدّم. الرقم السري لا يُطلب هنا أبدًا.
---
--- الرد (حالة لا خطأ، حتى تُحفظ عدّادات التخمين):
---   {status: 'restored', profile_id}
---   {status: 'wrong_code'}
---   {status: 'code_locked', retry_at}      -- 5 محاولات خاطئة على هذا الرمز
---   {status: 'device_locked', retry_at}    -- 10 محاولات فاشلة من هذه الهوية
---   {status: 'pending_deletion', profile_id, purge_at}
---       الطالب طلب حذف ملفه؛ استدعاء ثانٍ بـ p_cancel_deletion = true يلغي الحذف.
 create function public.restore_profile(
   p_code text,
   p_cancel_deletion boolean default false
@@ -537,12 +467,6 @@ begin
 end;
 $$;
 
--- ─────────────────────────────────────────────────────────────────────────────
--- «الحذف النهائي من كل مكان» (ADR 8): يتطلب رمز الطالب من جهاز مرتبط به (الرقم
--- السري يتحقق منه الهاتف). يختفي فورًا: الرفع والسحب يرفضانه بـ profile_deleted،
--- ويُمسح فعليًا بعد 14 يومًا ما لم يُلغَ بـ restore_profile(code, true).
---
--- الرد: {status: 'deletion_requested', purge_at} | {status: 'wrong_code'}
 create function public.request_deletion(p_profile_id uuid, p_code text)
 returns jsonb
 language plpgsql
@@ -572,8 +496,6 @@ begin
 end;
 $$;
 
--- «إزالة الملف من هذا الهاتف» (ADR 8): يفك ربط هذه الهوية فقط؛ النسخة على
--- الخادم تبقى للاستعادة.
 create function public.unlink_device(p_profile_id uuid)
 returns void
 language plpgsql
@@ -588,9 +510,6 @@ begin
 end;
 $$;
 
--- ─────────────────────────────────────────────────────────────────────────────
--- الصلاحيات: الدوال العامة للهويات المسجّلة فقط (والمجهولة منها). Supabase يعطي
--- الجميع حق التنفيذ افتراضيًا، فنسحبه أولًا.
 revoke execute on all functions in schema public from public, anon, authenticated;
 revoke all on all functions in schema private from public, anon, authenticated;
 

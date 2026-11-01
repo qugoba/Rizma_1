@@ -123,7 +123,10 @@ void main() {
       'ملف محمي: 25 ← 27 ← الرئيسية بالرمز الصحيح',
       (tester) => scenario(tester, seed: seedTwoWithPin, (db) async {
         await openAnasPin(tester);
-        expect(find.text(ArStrings.pinProfileChip('أنس', ArStrings.gradeName(5))), findsOneWidget);
+        expect(
+          find.text(ArStrings.pinProfileChip('أنس', ArStrings.gradeName(5))),
+          findsOneWidget,
+        );
 
         await enterPin(tester, '1234');
         expect(

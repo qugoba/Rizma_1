@@ -67,9 +67,7 @@ void main() {
     });
 
     testWidgets('التأخير يبقيه شفافًا حتى يحين دوره', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(home: const Text('x').fadeIn(4)),
-      );
+      await tester.pumpWidget(MaterialApp(home: const Text('x').fadeIn(4)));
       await tester.pump(const Duration(milliseconds: 120));
       expect(opacity(tester), 0);
 

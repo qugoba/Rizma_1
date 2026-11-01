@@ -5,13 +5,7 @@ import '../constants/app_assets.dart';
 import '../db/enums.dart';
 import '../theme/profile_palette.dart';
 
-enum MascotMood {
-  happy,
-
-  sleepy,
-
-  thinking,
-}
+enum MascotMood { happy, sleepy, thinking }
 
 class Mascot extends StatelessWidget {
   const Mascot({

@@ -1,0 +1,155 @@
+{
+ "format": 1,
+ "grade": 5,
+ "sequence": 2,
+ "published_at": "2026-10-29T07:56:00Z",
+ "catalog": {
+  "sha256": "1d69803fe29700a995aebd0b87f7ac9660c6477e08d921be3e2fa0be7122fde6",
+  "size": 27908
+ },
+ "lessons": [
+  {
+   "id": "math.u1.l1",
+   "version": 1,
+   "content_format": 1,
+   "files": [
+    {
+     "path": "lesson.json",
+     "sha256": "bcd8a1b4fc3b556cc6b843b421cf5236348e8cfb41e1732a3df27ae048f2bbee",
+     "size": 9075
+    }
+   ]
+  },
+  {
+   "id": "math.u1.l2",
+   "version": 1,
+   "content_format": 1,
+   "files": [
+    {
+     "path": "lesson.json",
+     "sha256": "e9954dd317e55bfeba56bc0b96eac2def0e90aa6445fc46d3d6f5bda317b29cb",
+     "size": 6505
+    }
+   ]
+  },
+  {
+   "id": "math.u2.l1",
+   "version": 1,
+   "content_format": 1,
+   "files": [
+    {
+     "path": "lesson.json",
+     "sha256": "7155c52523f073db64d9e7e05b5f2d00c1cd1a48cb559986efb0fb7be8e1a528",
+     "size": 5962
+    }
+   ]
+  },
+  {
+   "id": "math.u3.l1",
+   "version": 1,
+   "content_format": 1,
+   "files": [
+    {
+     "path": "lesson.json",
+     "sha256": "b49645739ab185635a68b336485082e80314f2ac37edca98a3cc03b933799e6d",
+     "size": 7789
+    }
+   ]
+  },
+  {
+   "id": "math.u3.l2",
+   "version": 1,
+   "content_format": 1,
+   "files": [
+    {
+     "path": "lesson.json",
+     "sha256": "b2f36e11d1f4f922b862127232026cac88d1cd08b8becb3fdc7de1b30b450744",
+     "size": 7136
+    }
+   ]
+  },
+  {
+   "id": "math.u3.l3",
+   "version": 1,
+   "content_format": 1,
+   "files": [
+    {
+     "path": "lesson.json",
+     "sha256": "5471647195d31cb8445acf0868da402e26aef32bfcd3ad959e7b622cbf32d0fb",
+     "size": 16952
+    }
+   ]
+  },
+  {
+   "id": "math.u3.l4",
+   "version": 1,
+   "content_format": 1,
+   "files": [
+    {
+     "path": "lesson.json",
+     "sha256": "5896e0e98451cf60541eff2110e48f96a61623c8dbd5d2861fde8f0de6d437fb",
+     "size": 7057
+    }
+   ]
+  },
+  {
+   "id": "arabic.u2.l2",
+   "version": 1,
+   "content_format": 1,
+   "files": [
+    {
+     "path": "lesson.json",
+     "sha256": "426e751b2efc6b093ace96bd44dec2b222bfab1702b5b92dbea3b38ac0d8de74",
+     "size": 8552
+    }
+   ]
+  },
+  {
+   "id": "english.u1.l1",
+   "version": 2,
+   "content_format": 1,
+   "files": [
+    {
+     "path": "lesson.json",
+     "sha256": "76bf40ac89205f4559eb73a4440d776cc22ad6b71f32726400ca08f168dec9f9",
+     "size": 13959
+    }
+   ],
+   "video": {
+    "sha256": "7a85c0d0baee4b56720fdd039de01ac26eb074de83a15c2fb4bef16b09387297",
+    "size": 32982317,
+    "minutes": 7
+   },
+   "attachments": [
+    {
+     "sha256": "5d0f3312cc94c828f0b874715e1ce35dfd0fefe1732926f97a1078d05a0c1ae7",
+     "size": 506927
+    }
+   ]
+  },
+  {
+   "id": "english.u2.l1",
+   "version": 1,
+   "content_format": 1,
+   "files": [
+    {
+     "path": "lesson.json",
+     "sha256": "66bc4fca7e73dcfbcf7e9f73275c21136cb5f566a71c0ea027e6741bbea3160b",
+     "size": 9321
+    }
+   ]
+  },
+  {
+   "id": "science.u1.l1",
+   "version": 1,
+   "content_format": 1,
+   "files": [
+    {
+     "path": "lesson.json",
+     "sha256": "5ff4d4eea2f311881250744629f06d395a3dd528e3897c7887cced45294f3969",
+     "size": 7966
+    }
+   ]
+  }
+ ]
+}

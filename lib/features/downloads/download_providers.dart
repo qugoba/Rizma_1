@@ -469,8 +469,7 @@ class DownloadController extends Notifier<DownloadStatus> {
     final run = () async {
       try {
         await body();
-      } catch (_) {
-      }
+      } catch (_) {}
     }();
     _busy = run;
     try {
